@@ -1,0 +1,158 @@
+.staff-invoice-modal-backdrop{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.staff-invoice-modal-backdrop .invoice-modal{
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    max-height: 90%;
+    overflow-y: auto;
+    font-family: Arial, sans-serif;
+}
+
+.staff-invoice-modal-backdrop .close-button{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+
+.staff-invoice-modal-backdrop .invoice-header{
+    text-align: start;
+    margin-bottom: 20px;
+    justify-content: space-around;
+    display: flex;
+    align-items: center;
+}
+
+.staff-invoice-modal-backdrop .logo-inventory-invoice{
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+
+
+
+.divider-line{
+    border-top: 1px solid black;
+    margin-bottom: 20px;
+}
+
+.invoice-details{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.invoice-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.invoice-table th,
+.invoice-table td{
+    text-align: left;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.invoice-table th{
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+.invoice-table img{
+    max-width: 50px;
+    max-height: 50px;
+    object-fit: cover;
+    margin-right: 10px;
+    border-radius: 4px;
+}
+
+.product-info{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.invoice-summary{
+    text-align: right;
+    font-size: 16px;
+}
+
+.invoice-summary p{
+    margin: 5px 0;
+}
+
+.invoice-logo img{
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+
+
+@media (max-width: 768px){
+    .staff-invoice-modal-backdrop .invoice-modal{
+        width: 95%;
+    }
+
+    .invoice-header{
+        flex-direction: column;
+    }
+
+    .invoice-details{
+        font-size: 12px;
+    }
+
+    .invoice-table{
+        font-size: 12px;
+    }
+
+    .invoice-summary{
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px){
+    .staff-invoice-modal-backdrop .invoice-modal{
+        padding: 15px;
+    }
+
+    .invoice-header h2{
+        font-size: 1.2rem;
+    }
+
+    .invoice-details{
+        flex-direction: column;
+    }
+
+    .invoice-table th,
+    .invoice-table td{
+        padding: 8px;
+    }
+}
