@@ -1,12 +1,9 @@
 const AdminAuthModel = require("../../models/AdminModels/AdminAuthModel");
 const jwt = require('jsonwebtoken');
 const StaffCartRefillModel = require("../../models/StaffModels/StaffCartRefillModel");
-const ProductModel = require("../../models/ProductModel");
-const { BestSellingModel, TotalSaleModel } = require("../../models/SalesOverviewModel");
-const ProductionReportModel = require("../../models/ProductionReportModel");
-const { getInventoryReport, getSalesReport } = require("../AdminControllers/AdminReportController");
-const StaffOrderRefillModel = require("../../models/StaffModels/StaffOrderRefillModel");
 const RefillProductModel = require("../../models/RefillProductModel");
+const RefillDeductModel = require("../../models/RefillDeductModel");
+const StaffOrderRefillModel = require("../../models/StaffModels/StaffOrderRefillModel");
 
 //create order via staff
 const addOrderRefillAdmin = async(req, res) => {
@@ -74,13 +71,29 @@ const addOrderRefillAdmin = async(req, res) => {
 
             await order.save();
 
-            //update stock for each ordered product
+            // Update stock for each ordered product and record deductions
             await Promise.all(
                 cartItems.map(async(item) => {
                     const product = await RefillProductModel.findById(item.productId._id);
                     if(product){
-                        product.volume -= item.volume; //deduct the ordered quantity
+                        // Calculate how many drums are needed for the volume
+                        // Assuming 1 drum = 1 unit (adjust calculation as needed)
+                        const drumsNeeded = Math.ceil(item.volume / product.maximumSizeLiter);
+                        
+                        // Deduct drums from RefillProductModel
+                        product.drum -= drumsNeeded;
                         await product.save();
+                        
+                        // Record the deduction in RefillDeductModel
+                        await new RefillDeductModel({
+                            productId: product._id,
+                            productName: product.productName,
+                            category: product.category,
+                            price: product.price,
+                            volume: item.volume,
+                            drum: drumsNeeded,
+                            color: product.color,
+                        }).save();
                     }
                 })
             );
@@ -99,7 +112,6 @@ const addOrderRefillAdmin = async(req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
-
 
 
 const getOrderRefillAdmin = async(req, res) => {

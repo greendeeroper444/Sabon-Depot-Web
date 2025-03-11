@@ -1,4 +1,6 @@
 const DatePickerModel = require("../../models/DatePickerModel");
+const ExpiryNotifPeriodModel = require("../../models/ExpiryNotifModel");
+const ExtentionPeriodModel = require("../../models/ExtentionPeriodModel");
 const TimePickerModel = require("../../models/TimePickerModel");
 
 const convertToAmPm = (time) => {
@@ -237,6 +239,127 @@ const getAllTimeSlots = async(req, res) => {
         });
     }
 };
+
+
+const getExtentionTime = async(req, res) => {
+    try {
+        const latestExtention = await ExtentionPeriodModel.findOne().sort({createdAt: -1});
+
+        if(!latestExtention){
+            return res.status(404).json({
+                message: 'No extension period found!' 
+            });
+        }
+
+        res.json({data: latestExtention});
+    } catch (error) {
+        res.status(500).json({ 
+            message: 'Server error', error 
+        });
+    }
+};
+
+//add new extension period
+const addExtentionTime = async(req, res) => {
+    try {
+        const {extentionPeriod} = req.body;
+        const newExtention = new ExtentionPeriodModel({extentionPeriod});
+        await newExtention.save();
+        res.status(201).json({ 
+            message: 'Extension period added successfully!', 
+            data: newExtention 
+        });
+    } catch (error) {
+        res.status(500).json({message: 'server error', error});
+    }
+};
+
+//update existing extension period
+const updateExtentionTime = async(req, res) => {
+    try {
+        const {id} = req.params;
+        const {extentionPeriod} = req.body;
+
+        const updatedExtention = await ExtentionPeriodModel.findByIdAndUpdate(
+            id,
+            {extentionPeriod},
+            {new: true}
+        );
+
+        if(!updatedExtention){
+            return res.status(404).json({message: 'Extension period not found!'});
+        }
+
+        res.json({ 
+            message: 'Extension period updated successfully!', data: updatedExtention 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            message: 'Server error', error 
+        });
+    }
+};
+
+
+const getExpiryNotifTime = async(req, res) => {
+    try {
+        const latestExpiryNotif = await ExpiryNotifPeriodModel.findOne().sort({createdAt: -1});
+
+        if(!latestExpiryNotif){
+            return res.status(404).json({
+                message: 'No extension period found!' 
+            });
+        }
+
+        res.json({data: latestExpiryNotif});
+    } catch (error) {
+        res.status(500).json({ 
+            message: 'Server error', error 
+        });
+    }
+};
+
+//add new extension period
+const addExpiryNotifTime = async(req, res) => {
+    try {
+        const {expiryNotifPeriod} = req.body;
+        const newExtention = new ExpiryNotifPeriodModel({expiryNotifPeriod});
+        await newExtention.save();
+        res.status(201).json({ 
+            message: 'Extension period added successfully!', 
+            data: newExtention 
+        });
+    } catch (error) {
+        res.status(500).json({message: 'server error', error});
+    }
+};
+
+//update existing extension period
+const updateExpiryNotifTime = async(req, res) => {
+    try {
+        const {id} = req.params;
+        const {expiryNotifPeriod} = req.body;
+
+        const updatedExpiryNotif = await ExpiryNotifPeriodModel.findByIdAndUpdate(
+            id,
+            {expiryNotifPeriod},
+            {new: true}
+        );
+
+        if(!updatedExpiryNotif){
+            return res.status(404).json({message: 'Extension period not found!'});
+        }
+
+        res.json({
+            message: 'Extension period updated successfully!', data: updatedExpiryNotif 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            message: 'Server error', error 
+        });
+    }
+};
+
 module.exports = {
     addDate,
     addTime,
@@ -248,5 +371,11 @@ module.exports = {
     updateTime,
     createTimeSlot,
     updateTimeSlot,
-    getAllTimeSlots
+    getAllTimeSlots,
+    getExtentionTime, 
+    addExtentionTime, 
+    updateExtentionTime,
+    getExpiryNotifTime, 
+    addExpiryNotifTime, 
+    updateExpiryNotifTime
 };

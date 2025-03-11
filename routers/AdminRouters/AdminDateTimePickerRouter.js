@@ -1,5 +1,5 @@
 const express = require('express');
-const { addDate, getDate, addTime, getTime, deleteDate, updateDate, deleteTime, updateTime, createTimeSlot, updateTimeSlot, getAllTimeSlots } = require('../../controllers/AdminControllers/AdminDateTimePickerController');
+const { addDate, getDate, addTime, getTime, deleteDate, updateDate, deleteTime, updateTime, createTimeSlot, updateTimeSlot, getAllTimeSlots, getExtentionTime, addExtentionTime, updateExtentionTime, getExpiryNotifTime, addExpiryNotifTime, updateExpiryNotifTime } = require('../../controllers/AdminControllers/AdminDateTimePickerController');
 
 const router = express.Router();
 
@@ -18,5 +18,15 @@ router.put('/updateTime/:id', updateTime);
 router.post('/createTimeSlot', createTimeSlot);
 router.put('/updateTimeSlot/:id', updateTimeSlot);
 router.get('/getAllTimeSlots', getAllTimeSlots);
+
+
+
+router.get('/getExtentionTime', getExtentionTime);
+router.post('/addExtentionTime', addExtentionTime);
+router.put('/updateExtentionTime/:id', updateExtentionTime);
+
+router.get('/getExpiryNotifTime', getExpiryNotifTime);
+router.post('/addExpiryNotifTime', addExpiryNotifTime);
+router.put('/updateExpiryNotifTime/:id', updateExpiryNotifTime);
 
 module.exports = router;

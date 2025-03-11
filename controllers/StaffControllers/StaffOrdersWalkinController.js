@@ -199,7 +199,6 @@ const addOrderWalkinStaff = async(req, res) => {
                     item.productId._id,
                     item.productId.productName,
                     item.productId.sizeUnit,
-                    // item.productId.productSize,
                     item.productId.category,
                     item.productId.price,
                     item.quantity,

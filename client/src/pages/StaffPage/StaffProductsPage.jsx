@@ -43,8 +43,18 @@ function StaffProductsPage() {
     
             //extract unique batch names from the response data
             const uniqueBatches = [...new Set(response.data.map((product) => product.batch))];
+            
+            //sort batches numerically
+            const sortedBatches = uniqueBatches.sort((a, b) => {
+                //extract numbers from batch names (e.g., "Batch 1" -> 1)
+                const numA = parseInt(a.replace(/\D/g, ''));
+                const numB = parseInt(b.replace(/\D/g, ''));
+                
+                //compare the extracted numbers
+                return numA - numB;
+            });
     
-            setBatches(uniqueBatches);
+            setBatches(sortedBatches);
     
             //sort products by quantity
             const sortedProducts = response.data.sort((a, b) => a.quantity - b.quantity);
@@ -55,6 +65,27 @@ function StaffProductsPage() {
             setLoading(false);
         }
     };
+    
+
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    //fetch products for a selected batch
+    const fetchBatchProducts = async(batch) => {
+        setLoading(true);
+        try {
+            const response = await axios.get(`/staffProduct/getBatchProductStaff?batch=${batch}`);
+            setProducts(response.data);
+            setSelectedBatch(batch);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     //generate PDF report
     const handleGenerateReport = () => {
@@ -145,20 +176,6 @@ function StaffProductsPage() {
     const handleCloseArchiveModal = () => {
         setIsArchiveModalOpen(false);
         setProductIdToArchive(null);
-    };
-
-     //fetch products for a selected batch
-     const fetchBatchProducts = async(batch) => {
-        setLoading(true);
-        try {
-            const response = await axios.get(`/adminProduct/getBatchProductAdmin?batch=${batch}`);
-            setProducts(response.data);
-            setSelectedBatch(batch);
-        } catch (error) {
-            console.error('Error fetching products:', error);
-        } finally {
-            setLoading(false);
-        }
     };
 
     //display/get product data
@@ -363,7 +380,7 @@ function StaffProductsPage() {
                                         onClick={() => handleEditProductClick(product._id)}
                                         >
                                             <img src={editIcon} alt="Edit Icon" />
-                                            </button>
+                                        </button>
                                         <button className='button-archived-icon' 
                                         onClick={() => handleArchivedProductClick(product._id, product.isArchived)}>
                                             {

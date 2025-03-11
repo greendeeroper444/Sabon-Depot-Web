@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import '../../../CSS/AdminCSS/AdminSettings/AdminOrderingComponent.css';
 import { orderDate } from '../../../utils/OrderUtils';
+import { toast } from 'react-hot-toast';
 
 function AdminOrderingComponent() {
     const [isDateModalOpen, setIsDateModalOpen] = useState(false);
@@ -17,7 +18,64 @@ function AdminOrderingComponent() {
     const [newEndTime, setNewEndTime] = useState('');
     const [updatedStartTime, setUpdatedStartTime] = useState('');
     const [updatedEndTime, setUpdatedEndTime] = useState('');
-    
+    const [count, setCount] = useState(1);
+    const [prevCount, setPrevCount] = useState(1);
+    const [extentionId, setExtentionId] = useState(null);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+
+    useEffect(() => {
+        fetchExtentionPeriod();
+    }, []);
+
+    const fetchExtentionPeriod = async() => {
+        try {
+            const response = await axios.get('/adminDatePicker/getExtentionTime');
+            if(response.data && response.data.data){
+                setCount(response.data.data.extentionPeriod);
+                setPrevCount(response.data.data.extentionPeriod);
+                setExtentionId(response.data.data._id);
+            }
+        } catch (error) {
+            console.error( error);
+        }
+    };
+
+    const handleIncrease = () => {
+        setPrevCount(count);
+        setCount(prev => prev + 1);
+        setShowConfirmation(true);
+    };
+
+    const handleDecrease = () => {
+        if(count > 1){
+            setPrevCount(count);
+            setCount(prev => prev - 1);
+            setShowConfirmation(true);
+        }
+    };
+
+    const handleConfirm = async() => {
+        try {
+            await axios.put(`/adminDatePicker/updateExtentionTime/${extentionId}`, { 
+                extentionPeriod: count 
+            });
+            setShowConfirmation(false);
+
+            toast.success('Extension period updated successfully');
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleCancel = () => {
+        setCount(prevCount);
+        setShowConfirmation(false);
+        toast.error('Extension period updated cancelled');
+    };
+
+
+
+
     const fetchDates = async() => {
         try {
             const response = await axios.get('/adminDatePicker/getDate');
@@ -138,6 +196,31 @@ function AdminOrderingComponent() {
 
   return (
     <div className='admin-ordering-component'>
+
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div className='extention-period'>
+                <h3>Extension Period</h3>
+                <div className='counter'>
+                    <button className='btn minus' onClick={handleDecrease}>-</button>
+                    <span className='count'>{count}</span>
+                    <button className='btn plus' onClick={handleIncrease}>+</button>
+                    {
+                        showConfirmation && (
+                            <div className='confirmation'>
+                                <span className='confirm-check' onClick={handleConfirm}>✔️</span>
+                                <span className='cancel-times' onClick={handleCancel}>❌</span>
+                            </div>
+                        
+                        )
+                    }
+                </div>
+            </div>
+
+           
+        </div>
+
+        <br />
+        <br />
         <div className='action-buttons'>
             <button
             onClick={() => setIsDateModalOpen(true)}
@@ -317,33 +400,33 @@ function AdminOrderingComponent() {
             </table>
 
             <h3>Available Times</h3>
-                <table className='entries-table'>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            timeSlots.map((entry, index) => (
-                                <tr key={entry._id}>
-                                    <td>{index + 1}</td>
-                                    <td>{new Date(`1970-01-01T${entry.time.startTime}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</td>
-                                    <td>{new Date(`1970-01-01T${entry.time.endTime}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</td>
+            <table className='entries-table'>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        timeSlots.map((entry, index) => (
+                            <tr key={entry._id}>
+                                <td>{index + 1}</td>
+                                <td>{new Date(`1970-01-01T${entry.time.startTime}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</td>
+                                <td>{new Date(`1970-01-01T${entry.time.endTime}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</td>
 
-                                    <td>
-                                        <button className='delete-btn' onClick={() => handleDeleteTime(entry._id)}>Delete</button>
-                                        {' '}
-                                        <button className='edit-btn' onClick={() => openUpdateTimeModal(entry._id, entry.time)}>Edit</button>
-                                    </td>
-                                </tr>
-                            ))
-                        }
-                    </tbody>
-                </table>
+                                <td>
+                                    <button className='delete-btn' onClick={() => handleDeleteTime(entry._id)}>Delete</button>
+                                    {' '}
+                                    <button className='edit-btn' onClick={() => openUpdateTimeModal(entry._id, entry.time)}>Edit</button>
+                                </td>
+                            </tr>
+                        ))
+                    }
+                </tbody>
+            </table>
 
         </div>
     </div>

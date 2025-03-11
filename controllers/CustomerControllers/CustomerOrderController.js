@@ -177,7 +177,6 @@ const createOrderCustomer = async(req, res) => {
                 items: cartItems.map(item => ({
                     productId: item.productId._id,
                     productCode: item.productId.productCode,
-                    imageUrl: product.imageUrl,
                     productName: item.productId.productName,
                     category: item.productId.category,
                     price: item.productId.price,
@@ -270,27 +269,25 @@ const createOrderCustomer = async(req, res) => {
             }
 
 
-            await getInventoryReport(
-                item.productId._id,
-                item.productId.productName,
-                item.productId.sizeUnit,
-                item.productId.productSize,
-                item.productId.category,
-                item.quantity,
-                true
-            );
+            // await getInventoryReport(
+            //     item.productId._id,
+            //     item.productId.productName,
+            //     item.productId.sizeUnit,
+            //     item.productId.productSize,
+            //     item.productId.category,
+            //     item.quantity,
+            //     true
+            // );
 
             await getSalesReport(
                 item.productId._id,
                 item.productId.productName,
                 item.productId.sizeUnit,
-                item.productId.productSize,
                 item.productId.category,
                 item.productId.price,
                 item.quantity,
                 true
             );
-        
         }));
 
         //remove selected items from the cart
@@ -494,8 +491,8 @@ const directCheckoutCustomer = async(req, res) => {
                     await getSalesReport(
                         productId,
                         productName,
-                        product.category,
                         product.sizeUnit,
+                        product.category,
                         price,
                         quantity,
                         true

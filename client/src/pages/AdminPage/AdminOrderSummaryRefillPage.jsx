@@ -80,6 +80,7 @@ function AdminOrderSummaryRefillPage() {
                                         <p>Price: ₱{item.price}</p>
                                         <p>Size Unit: {item.sizeUnit}</p>
                                         <p>Product Size: {item.productSize}</p>
+                                        <p>Volume: {item.volume}L</p>
                                     </div>
                                 </div>
                             ))

@@ -2,11 +2,66 @@ import React, { useEffect, useState } from 'react'
 import '../../../CSS/AdminCSS/AdminSettings/AdminNotificationsComponent.css';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 function AdminNotificationsComponent() {
     const [orderNotifications, setOrderNotifications] = useState([]);
     const [expirationNotifications, setExpirationNotifications] = useState([]);
     const [lowStockNotifications, setLowStockNotifications] = useState([]);
+    const [count, setCount] = useState(1);
+    const [prevCount, setPrevCount] = useState(1);
+    const [expiryNotifId, setExpiryNotifId] = useState(null);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+
+    useEffect(() => {
+        fetchExpiryNotifPeriod();
+    }, []);
+
+    const fetchExpiryNotifPeriod = async() => {
+        try {
+            const response = await axios.get('/adminDatePicker/getExpiryNotifTime');
+            if(response.data && response.data.data){
+                setCount(response.data.data.expiryNotifPeriod);
+                setPrevCount(response.data.data.expiryNotifPeriod);
+                setExpiryNotifId(response.data.data._id);
+            }
+        } catch (error) {
+            console.error( error);
+        }
+    };
+
+    const handleIncrease = () => {
+        setPrevCount(count);
+        setCount(prev => prev + 1);
+        setShowConfirmation(true);
+    };
+
+    const handleDecrease = () => {
+        if(count > 1){
+            setPrevCount(count);
+            setCount(prev => prev - 1);
+            setShowConfirmation(true);
+        }
+    };
+
+    const handleConfirm = async() => {
+        try {
+            await axios.put(`/adminDatePicker/updateExpiryNotifTime/${expiryNotifId}`, { 
+                expiryNotifPeriod: count 
+            });
+            setShowConfirmation(false);
+
+            toast.success('Extension period updated successfully');
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleCancel = () => {
+        setCount(prevCount);
+        setShowConfirmation(false);
+        toast.error('Extension period updated cancelled');
+    };
 
     //fetch order-related notifications
     const fetchOrderNotifications = async() => {
@@ -84,7 +139,31 @@ function AdminNotificationsComponent() {
 
             {/* expiration notifications */}
             <div className='notification-category-order'>
-                <h3>Expiration Notifications</h3>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h3>Expiration Notifications</h3>
+                </div>
+                <div className='extention-period' style={{ marginTop: '30px' }}>
+                    <div>
+                        <h3>Expiry Notification</h3>
+                    </div>
+                    <div className='counter'>
+                        <button className='btn minus' onClick={handleDecrease}>-</button>
+                        <span className='count'>{count}</span>
+                        <button className='btn plus' onClick={handleIncrease}>+</button>
+                        {
+                            showConfirmation && (
+                                <div className='confirmation'>
+                                    <span className='confirm-check' onClick={handleConfirm}>✔️</span>
+                                    <span className='cancel-times' onClick={handleCancel}>❌</span>
+                                </div>
+                            
+                            )
+                        }
+                    </div>
+                </div>
+                
+            </div>
                 {
                     expirationNotifications.length > 0 ? (
                         expirationNotifications.map((notification, index) => (

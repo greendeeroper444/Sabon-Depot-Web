@@ -4,9 +4,9 @@ const jwt = require('jsonwebtoken')
 
 const addRefillProductAdmin = async(req, res) => {
     try {
-        const {productName, category, price, volume, color} = req.body;
+        const {productName, category, drum, color} = req.body;
 
-        if(!productName || !category || !price || !volume || !color){
+        if(!productName || !category || !drum || !color){
             return res.json({
                 error: 'Please provide all required fields'
             });
@@ -38,8 +38,7 @@ const addRefillProductAdmin = async(req, res) => {
             const newRefillProduct = await RefillProductModel.create({
                 productName,
                 category,
-                price,
-                volume,
+                drum,
                 color,
                 uploaderId: adminId,
                 uploaderType: 'Admin',
@@ -75,9 +74,9 @@ const getRefillProductAdmin = async(req, res) => {
 const editRefillProductAdmin = async(req, res) => {
     try {
         const {productId} = req.params;
-        const {productName, category, price, volume, color} = req.body;
+        const {productName, category, drum, volume, color} = req.body;
 
-        if(!productName || !category || !price || !volume || !color){
+        if(!productName || !category || !drum || !volume || !color){
             return res.json({
                 error: 'Please provide all required fields',
             });
@@ -107,7 +106,7 @@ const editRefillProductAdmin = async(req, res) => {
 
             const updatedProduct = await RefillProductModel.findByIdAndUpdate(
                 productId,
-                {productName, category, price, volume, color},
+                {productName, category, drum, volume, color},
                 {new: true}
             );
 

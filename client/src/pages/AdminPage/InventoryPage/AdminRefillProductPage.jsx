@@ -1,52 +1,3 @@
-// import React from 'react'
-// import '../../../CSS/AdminCSS/AdminInventory/RefillProduct.css';
-
-// const products = [
-//   { id: 1, productName: 'Product 1', quantiy: 50, maximumSizeLiter: 105, color: 'orange' }, // Full
-//   { id: 2, productName: 'Product 2', quantiy: 50, maximumSizeLiter: 105, color: 'yellow' },  // Half full
-//   { id: 3, productName: 'Product 3', quantiy: 75, maximumSizeLiter: 105, color: 'green' },  // 75% full
-//   { id: 4, productName: 'Product 4', quantiy: 30, maximumSizeLiter: 105, color: 'blue' },  // Less water
-// ];
-
-// function AdminRefillProductPage() {
-//   return (
-//     <div className='admin-refill-container'>
-//       <div className='controls'>
-//         <select className='dropdown'>
-//           <option>All Products</option>
-//         </select>
-//         <select className='dropdown'>
-//           <option>Refill</option>
-//         </select>
-//         <button className='deducted-btn'>Deducted</button>
-//       </div>
-
-//       <div className='product-grid'>
-//         {products.map((product) => {
-//           const waterLevel = (product.quantiy / product.maxquantiy) * 100;
-
-//           return (
-//             <div className='product-display' key={product.id}>
-//               <div className='cylinder'>
-//                 <div
-//                   className='water'
-//                   style={{ height: `${waterLevel}%`, background: product.color }}
-//                 ></div>
-//               </div>
-//               <p>
-//                 {product.productName} - {product.quantiy}L
-//               </p>
-//             </div>
-//           );
-//         })}
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default AdminRefillProductPage;
-
-
 import React, { useEffect, useState } from 'react'
 import '../../../CSS/AdminCSS/AdminInventory/RefillProduct.css';
 import AdminModalRefillProductsAddComponent from '../../../components/AdminComponents/AdminModalRefillProducts/AdminModalRefillProductsAddComponent';
@@ -154,38 +105,6 @@ function AdminRefillProductPage() {
         fetchRefillProducts={fetchRefillProducts}
         />
 
-        <div className='admin-finished-product-header'>
-            <div className='admin-finished-product-header-controls'>
-                <div>Overall Inventory</div>
-            </div>
-            <div className='admin-finished-product-container'>
-                <table className='admin-finished-product-header-table'>
-                    <thead>
-                        <tr>
-                            <th>Categories</th>
-                            <th>Total Products</th>
-                            <th>Total Units Produced</th>
-                            <th></th>
-                            <th>Low Stocks</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr className='subtext'>
-                            {/* <td>Last 7 days</td>
-                            <td>Last 7 days</td>
-                            <td>Last 7 days</td> */}
-                            <td>Total</td>
-                            <td>Ordered</td>
-                            <td>Not in stock</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-
-
         <div className='admin-finished-product-controls'>
             <div>Refill Products</div>
             <div>
@@ -213,6 +132,7 @@ function AdminRefillProductPage() {
                 <tr>
                     <th>Product Name</th>
                     <th>Liquid Level</th>
+                    <th>Drum Quantity</th>
                     <th>Volume (L)</th>
                     <th>Actions</th>
                 </tr>
@@ -233,6 +153,7 @@ function AdminRefillProductPage() {
                                         ></div>
                                     </div>
                                 </td>
+                                <td>{product.drum} Drum</td>
                                 <td>{product.volume}L</td>
                                 <td>
                                     <button onClick={() => handleEditProductClick(product._id)}>Edit</button>

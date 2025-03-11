@@ -1,46 +1,149 @@
 .admin-modal-products-add-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(5px);
     z-index: 1000;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.admin-modal-products-add-container .admin-modal-products-add-content{
-    background: white;
-    position: relative;
-    width: 100%;
-    max-width: 800px;
-    /* height: 50%; */
-    border: 3px solid #000;
-    padding: 40px 50px;
-    border-radius: 20px;
-    height: 500px;
     overflow-y: auto;
 }
 
-.admin-modal-products-add-container ::-webkit-scrollbar{
-    width: 10px;
-    display: none; 
+.admin-modal-products-add-form{
+    background: white;
+    padding: 0;
+    margin: auto;
+    width: 600px;
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    flex-direction: column;
 }
-  
-.admin-modal-products-add-container ::-webkit-scrollbar-track{
-    background: #f1f1f1;
-}
-  
 
-.admin-modal-products-add-container ::-webkit-scrollbar-thumb{
-    background: #888;
+.admin-modal-products-add-header{
+    background-color: #ffd700;
+    width: 100%;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
-  
-.admin-modal-products-add-container ::-webkit-scrollbar-thumb:hover{
-    background: #555;
+.admin-modal-products-add-header button{
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
 }
+.admin-modal-products-add-container .admin-modal-products-add-content{
+    background: white;
+    padding: 20px;
+}
+
+.admin-modal-products-add-container .admin-modal-products-add-inputs{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.admin-modal-products-add-container .label-information{
+    background-color: #fff3cd;
+    padding: 5px 10px;
+    font-weight: bold;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+
+.admin-modal-products-add-container .label-text{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.admin-modal-products-add-container .label-text label{
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #555;
+}
+
+.admin-modal-products-add-container .label-text input,
+.admin-modal-products-add-container .label-text select,
+.admin-modal-products-add-container .label-text textarea{
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 12px;
+    transition: border 0.3s ease;
+    box-sizing: border-box;
+}
+
+.admin-modal-products-add-container .label-text input:focus,
+.admin-modal-products-add-container .label-text select:focus,
+.admin-modal-products-add-container .label-text textarea:focus{
+    border: 1px solid #077A37;
+    outline: none;
+}
+
+.admin-modal-products-add-container .label-text textarea{
+    height: 80px;
+    resize: none;
+}
+
+.admin-modal-products-add-container .admin-modal-products-add-buttons{
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.admin-modal-products-add-container .admin-modal-products-add-buttons button{
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.admin-modal-products-add-container .admin-modal-products-add-buttons button:first-child{
+    background: #077A37;
+    color: white;
+}
+
+.admin-modal-products-add-container .admin-modal-products-add-buttons button:first-child:hover{
+    background: #077A37;
+}
+
+.admin-modal-products-add-container .admin-modal-products-add-buttons button:last-child{
+    background: #dc3545;
+    color: white;
+}
+
+.admin-modal-products-add-container .admin-modal-products-add-buttons button:last-child:hover{
+    background: #999;
+}
+
+
+@media (max-width: 768px){
+    .admin-modal-products-add-container .admin-modal-products-add-inputs{
+        grid-template-columns: 1fr;
+    }
+
+    .admin-modal-products-add-container .admin-modal-products-add-content{
+        width: 90%;
+    }
+}
+
+
 
 .admin-modal-products-add-image-upload{
     display: flex;
@@ -93,100 +196,10 @@
     border: 1px solid #10B981;
 }
 
+
 .admin-modal-products-add-image-upload-right .file-input-container .file-input-text{
     color: #888;
 }
 
 
 
-
-.admin-modal-products-add-container .admin-modal-products-add-content .label-text{
-    display: flex;
-    margin-bottom: 20px;
-    justify-content: space-between;
-    align-items: center;
-}
-  
-  
-.admin-modal-products-add-container .admin-modal-products-add-content .label-text label{
-    display: block;
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-
-/* .admin-modal-products-add-container .admin-modal-products-add-content .label-text div{
-    margin-right: 150px;
-} */
-
-.admin-modal-products-add-container .admin-modal-products-add-content .label-text input,
-.admin-modal-products-add-container .admin-modal-products-add-content .label-text select{
-    width: 100%;
-    padding: 10px 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f0f0f0;
-    box-sizing: border-box;
-    margin-top: 10px;
-}
-
-.admin-modal-products-add-container .admin-modal-products-add-content .label-text{
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.admin-modal-products-add-container .admin-modal-products-add-content .label-text label{
-    flex: 0 0 150px;
-}
-
-.admin-modal-products-add-container .admin-modal-products-add-content .label-text div{
-    flex: 1;
-}
-
-.admin-modal-products-add-container .admin-modal-products-add-content .admin-modal-products-add-buttons{
-    display: flex;
-    justify-content: space-between;
-    width: 200px;
-    float: right;
-}
-  
-.admin-modal-products-add-container .admin-modal-products-add-content button{
-    width: 48%;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    text-align: center;
-}
-  
-.admin-modal-products-add-container .admin-modal-products-add-content button:nth-child(1){
-    background-color: #077A37;
-}
-
-.admin-modal-products-add-container .admin-modal-products-add-content button:nth-child(1):hover, 
-.admin-modal-products-add-container .admin-modal-products-add-content button:nth-child(1):focus{
-    padding: 8px;
-    background-color: transparent;
-    border: 1px solid #077A37;
-    color: #077A37;
-}
-  
-.admin-modal-products-add-container .admin-modal-products-add-content button:nth-child(2){
-    background-color: #EC5A5A;
-}
-  
-.admin-modal-products-add-container .admin-modal-products-add-content button:nth-child(2):hover, 
-.admin-modal-products-add-container .admin-modal-products-add-content button:nth-child(2):focus{
-    padding: 8px;
-    background-color: transparent;
-    border: 1px solid #EC5A5A;
-    color: #EC5A5A;
-}
-  
-.admin-modal-products-add-inputs{
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-}

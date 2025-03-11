@@ -154,37 +154,6 @@ function StaffRefillProductPage() {
         fetchRefillProducts={fetchRefillProducts}
         />
 
-        <div className='admin-finished-product-header'>
-            <div className='admin-finished-product-header-controls'>
-                <div>Overall Inventory</div>
-            </div>
-            <div className='admin-finished-product-container'>
-                <table className='admin-finished-product-header-table'>
-                    <thead>
-                        <tr>
-                            <th>Categories</th>
-                            <th>Total Products</th>
-                            <th>Total Units Produced</th>
-                            <th></th>
-                            <th>Low Stocks</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr className='subtext'>
-                            {/* <td>Last 7 days</td>
-                            <td>Last 7 days</td>
-                            <td>Last 7 days</td> */}
-                            <td>Total</td>
-                            <td>Ordered</td>
-                            <td>Not in stock</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-
 
         <div className='admin-finished-product-controls'>
             <div>Refill Products</div>
@@ -213,6 +182,7 @@ function StaffRefillProductPage() {
                 <tr>
                     <th>Product Name</th>
                     <th>Liquid Level</th>
+                    <th>Drum Quantity</th>
                     <th>Volume (L)</th>
                     <th>Actions</th>
                 </tr>
@@ -233,6 +203,7 @@ function StaffRefillProductPage() {
                                         ></div>
                                     </div>
                                 </td>
+                                <td>{product.drum} Drum</td>
                                 <td>{product.volume}L</td>
                                 <td>
                                     <button onClick={() => handleEditProductClick(product._id)}>Edit</button>

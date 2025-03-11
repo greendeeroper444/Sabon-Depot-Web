@@ -172,3 +172,91 @@
     background-color: #f44336;
     color: #fff;
 }
+
+
+
+
+.extention-period{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: start;
+}
+  
+  
+.extention-period .counter{
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    overflow: hidden;
+}
+  
+.extention-period .btn{
+    background-color: #077A37;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 16px;
+}
+  
+.extention-period .btn:hover{
+    background-color: #05612b;
+}
+  
+.extention-period .minus{
+    border-right: 1px solid #ccc;
+}
+  
+.extention-period .plus{
+    border-left: 1px solid #ccc;
+}
+  
+.extention-period .count{
+    padding: 6px 12px;
+    background-color: white;
+    color: #333;
+    min-width: 30px;
+    text-align: center;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
+  
+.extention-period .confirm-btn{
+    background-color: #077A37;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+  
+.extention-period .confirm-btn:hover{
+    background-color: #05612b;
+}
+  
+.extention-period .counter{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.extention-period .confirmation{
+    display: flex;
+    gap: 10px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.extention-period .confirm-check{
+    color: green;
+    font-size: 20px;
+}
+
+.extention-period .cancel-times{
+    color: red;
+    font-size: 20px;
+}

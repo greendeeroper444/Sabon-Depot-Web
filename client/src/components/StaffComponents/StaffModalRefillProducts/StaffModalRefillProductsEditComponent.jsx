@@ -9,7 +9,7 @@ function StaffModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
     const [dataInput, setDataInput] = useState({
         productName: '', 
         category: '', 
-        price: '', 
+        drum: '', 
         volume: '',
         color: '#ff0000'
     })
@@ -21,7 +21,7 @@ function StaffModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
             setDataInput({
                 productName: selectedProduct.productName || '',
                 category: selectedProduct.category || '',
-                price: selectedProduct.price || '',
+                drum: selectedProduct.drum || '',
                 volume: selectedProduct.volume || '',
                 color: selectedProduct.color || '#ff0000'
             });
@@ -66,14 +66,14 @@ function StaffModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
     
     if(!isOpen) return null;
 
-    const handleEditProductAdmin = async(e) => {
+    const handleEditProductStaff = async(e) => {
         e.preventDefault();
 
-        const {productName, category, price, volume, color} = dataInput;
+        const {productName, category, drum, volume, color} = dataInput;
 
         const updatedVolume = parseInt(dataInput.volume) + parseInt(inputValue);
     
-        if(!productName || !category || !price || !volume){
+        if(!productName || !category || !drum || !volume){
             toast.error('Please input all fields');
             return;
         }
@@ -88,7 +88,7 @@ function StaffModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
             const response = await axios.put(`/staffRefillProduct/editRefillProductStaff/${selectedProduct._id}`, {
                 productName,
                 category,
-                price,
+                drum,
                 volume: updatedVolume,
                 color
             }, {
@@ -110,96 +110,92 @@ function StaffModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
 
   return (
     <div className='admin-modal-products-add-container'>
-        <form className='admin-modal-products-add-content'>
-            <div className='label-text'>
-                <label>PRODUCT NAME:</label>
-                <div>
-                    <input type="text"
-                    value={dataInput.productName} 
-                    onChange={(e) => setDataInput({...dataInput, productName: e.target.value})}
-                    />
-                </div>
+        <form className='admin-modal-products-add-form'>
+            <div className='admin-modal-products-add-header'>
+                <h3>Update Refill Product</h3>
+                <button onClick={onClose}>X</button>
             </div>
-            <div className='label-text'>
-                <label>CATEGORY:</label>
-                <div>
-                    <select
-                    value={dataInput.category}
-                    onChange={handleCategoryChange}
-                    >
-                        <option value="">Select Category</option>
-                        {
-                            categories && categories.length > 0 ? (
-                                categories.map((category) => (
-                                    <option key={category._id} value={category.categoryName}>
-                                        {category.categoryName}
-                                    </option>
-                                ))
-                            ) : (
-                                <option value="">No categories available</option>
-                            )
-                        }
-                    </select>
-                </div>
-            </div>
-            <div className='label-text'>
-                <label>PRICE:</label>
-                <div>
-                    <input type="number"
-                    value={dataInput.price} 
-                    onChange={(e) => setDataInput({...dataInput, price: e.target.value})} 
-                    />
-                </div>
-            </div>
-            <div className='label-text'>
-                <label>UPDATE VOLUME:</label>
-                <div>
-                    <input
-                        type="number"
-                        value={inputValue}
-                        onChange={(e) => {
-                            const newValue = e.target.value;
-                            setInputValue(newValue === "" ? "" : Number(newValue));
-                        }}
-                    />
-
-                </div>
-                <span>
-                    = {dataInput.volume + inputValue}
-                </span>
-            </div>
-
-            <div style={{ position: 'relative' }}>
-            <label style={{ fontWeight: 'bold' }}>COLOR:</label>
-              <div style={{ position: 'relative' }}>
-                    <div 
-                    onClick={() => setShowPicker(!showPicker)}
-                    style={{
-                    width: '50px',
-                    height: '50px',
-                    backgroundColor: dataInput.color,
-                    border: '1px solid #000',
-                    cursor: 'pointer',
-                    display: 'inline-block',
-                    marginLeft: '10px',
-                    }}
-                    ></div>
-
-                    {
-                        showPicker && (
-                            <div style={{ position: 'absolute', zIndex: 2 }}>
-                                <ChromePicker
-                                    color={dataInput.color}
-                                    onChangeComplete={handleChangeComplete}
+            <div className='admin-modal-products-add-content'>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className='label-information'>
+                        <label htmlFor="">Product Information</label>
+                    </div>
+                    <div className='admin-modal-products-add-inputs'>
+                        <div className='label-text'>
+                            <div>
+                                <label>PRODUCT NAME:</label>
+                                <input type="text"
+                                value={dataInput.productName} 
+                                onChange={(e) => setDataInput({...dataInput, productName: e.target.value})}
                                 />
                             </div>
-                        )
-                    }
+                        </div>
+                        <div className='label-text'>
+                            <div>
+                                <label>CATEGORY:</label>
+                                <select
+                                value={dataInput.category}
+                                onChange={handleCategoryChange}
+                                >
+                                    <option value="">Select Category</option>
+                                    {
+                                        categories && categories.length > 0 ? (
+                                            categories.map((category) => (
+                                                <option key={category._id} value={category.categoryName}>
+                                                    {category.categoryName}
+                                                </option>
+                                            ))
+                                        ) : (
+                                            <option value="">No categories available</option>
+                                        )
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div className='label-text'>
+                            <div>
+                                <label>Drum Quantity:</label>
+                                <input type="number"
+                                value={dataInput.drum} 
+                                onChange={(e) => setDataInput({...dataInput, drum: e.target.value})} 
+                                />
+                            </div>
+                        </div>
+                        
+                        <div style={{ position: 'relative' }}>
+                            <label style={{ fontWeight: 'bold', fontSize: '10px' }}>COLOR:</label>
+                            <div style={{ position: 'relative' }}>
+                                <div 
+                                onClick={() => setShowPicker(!showPicker)}
+                                style={{
+                                width: '50px',
+                                height: '50px',
+                                backgroundColor: dataInput.color,
+                                border: '1px solid #000',
+                                cursor: 'pointer',
+                                display: 'inline-block',
+                                marginLeft: '10px',
+                                }}
+                                ></div>
+
+                                {
+                                    showPicker && (
+                                        <div style={{ position: 'absolute', zIndex: 2 }}>
+                                            <ChromePicker
+                                            color={dataInput.color}
+                                            onChangeComplete={handleChangeComplete}
+                                            />
+                                        </div>
+                                    )
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div className='admin-modal-products-add-buttons'>
-                <button onClick={handleEditProductAdmin}>SAVE</button>
-                <button onClick={onClose}>CANCEL</button>
+                <div className='admin-modal-products-add-buttons'>
+                    <button onClick={handleEditProductStaff}>OKAY</button>
+                    <button onClick={onClose}>CANCEL</button>
+                </div>
             </div>
         </form>
     </div>

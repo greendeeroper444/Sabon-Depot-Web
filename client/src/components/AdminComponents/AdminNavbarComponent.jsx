@@ -66,9 +66,7 @@ function AdminNavbarComponent({adminToggleSidebar}) {
         setDropdownVisible(!dropdownVisible);
     };
 
-    const toggleNotificationDropdown = () => {
-        setNotificationDropdownVisible(!notificationDropdownVisible);
-    };
+   
 
     const handleConfirmLogout = async() => {
         try {
@@ -121,6 +119,10 @@ function AdminNavbarComponent({adminToggleSidebar}) {
         ...expirationNotifications.map(notification => ({ type: 'expiration', ...notification })),
         ...lowStockNotifications.map(notification => ({ type: 'lowStock', ...notification }))
     ];
+
+    const toggleNotificationDropdown = () => {
+        setNotificationDropdownVisible(!notificationDropdownVisible);
+    };
 
     return (
         <nav className='admin-navbar'>
@@ -239,7 +241,9 @@ function AdminNavbarComponent({adminToggleSidebar}) {
                             )
                         }
                     </div>
-                    <img src={bottomAngleIcon} alt="Dropdown Icon" className='dropdown-icon' onClick={toggleDropdown} />
+                    <img src={bottomAngleIcon} 
+                    alt="Dropdown Icon" className='dropdown-icon' 
+                    onClick={toggleDropdown} />
                     {
                         dropdownVisible && (
                             <div className='dropdown-menu'>

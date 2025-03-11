@@ -14,13 +14,19 @@ const RefillProductSchema = new mongoose.Schema({
     },
     price: {
         type: Number,
+        default: 0
     },
     volume: {
         type: Number,
+        default: 105
     },
     maximumSizeLiter: {
         type: Number,
         default: 105
+    },
+    drum: {
+        type: Number,
+        required: true
     },
     color: {
         type: String,

@@ -45,10 +45,13 @@ const addProductToCartRefillAdmin = async(req, res) => {
                 convertedVolume = volume * 3.785; //convert Gallon to L
             }
 
-            //check stock availability
-            if(product.volume < convertedVolume){
+            // Calculate drums needed
+            const drumsNeeded = Math.ceil(convertedVolume / product.maximumSizeLiter);
+            
+            // Check if enough drums are available
+            if(product.drum < drumsNeeded){
                 return res.status(400).json({ 
-                    error: 'Not enough stock available' 
+                    error: 'Not enough drums available' 
                 });
             }
 
@@ -59,15 +62,20 @@ const addProductToCartRefillAdmin = async(req, res) => {
             let productSize = `${volume}${unit === 'Liter' ? 'L' : unit === 'Milliliter' ? 'ml' : 'Gal'}`;
             
             if(existingCartItem){
-                //ensure stock is enough for new total volume
-                if(product.volume < convertedVolume + existingCartItem.volume){
+                // Calculate total volume and drums needed after adding to cart
+                const totalVolume = convertedVolume + existingCartItem.volume;
+                const totalDrumsNeeded = Math.ceil(totalVolume / product.maximumSizeLiter);
+                
+                // Check if enough drums are available for the updated total
+                if(product.drum < totalDrumsNeeded){
                     return res.status(400).json({ 
-                        error: 'Not enough stock available' 
+                        error: 'Not enough drums available for the requested amount' 
                     });
                 }
 
-                //update existing cart item
+                // Update existing cart item
                 existingCartItem.volume += convertedVolume;
+                existingCartItem.drum = totalDrumsNeeded; // Add drum field to cart model
                 existingCartItem.productSize = `${existingCartItem.volume}${sizeUnit === 'Liter' ? 'L' : sizeUnit === 'Milliliter' ? 'ml' : 'Gal'}`;
                 existingCartItem.updatedAt = Date.now();
                 await existingCartItem.save();
@@ -76,6 +84,7 @@ const addProductToCartRefillAdmin = async(req, res) => {
                     adminId,
                     productId,
                     volume: convertedVolume,
+                    drum: drumsNeeded, // Add drum field to cart model
                     price,
                     productName: product.productName,
                     productSizeLiter: product.volume,
@@ -84,10 +93,8 @@ const addProductToCartRefillAdmin = async(req, res) => {
                 }).save();
             }
 
-            //deduct volume from product stock
-            product.volume -= convertedVolume;
-            await product.save();
-
+            // Don't deduct from product stock here - only when order is finalized
+            
             const updatedCart = await StaffCartRefillModel.find({adminId}).populate('productId');
             res.json(updatedCart);
         } catch (error) {

@@ -50,8 +50,18 @@ function AdminFinishedProductPage() {
     
             //extract unique batch names from the response data
             const uniqueBatches = [...new Set(response.data.map((product) => product.batch))];
+            
+            //sort batches numerically
+            const sortedBatches = uniqueBatches.sort((a, b) => {
+                //extract numbers from batch names (e.g., "Batch 1" -> 1)
+                const numA = parseInt(a.replace(/\D/g, ''));
+                const numB = parseInt(b.replace(/\D/g, ''));
+                
+                //compare the extracted numbers
+                return numA - numB;
+            });
     
-            setBatches(uniqueBatches);
+            setBatches(sortedBatches);
     
             //sort products by quantity
             const sortedProducts = response.data.sort((a, b) => a.quantity - b.quantity);
@@ -170,6 +180,8 @@ function AdminFinishedProductPage() {
             setIsDeleteModalOpen(false);
             setProductIdToDelete(null);
             toast.success(response.data.message);
+
+            fetchProducts();
         } catch (error) {
             console.log(error)
         }
@@ -209,7 +221,7 @@ function AdminFinishedProductPage() {
         <AdminModalProductsDeleteComponent
         isOpen={isDeleteModalOpen} 
         onClose={handleCloseDeleteModal} 
-        onConfirm={handleConfirmDelete} 
+        onConfirm={handleConfirmDelete}
         />
 
         <AdminModalProductsEditComponent

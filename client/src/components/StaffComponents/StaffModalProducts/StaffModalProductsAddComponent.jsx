@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import '../../../CSS/StaffCSS/StaffModalProducts/StaffModalProductsAdd.css';
+import '../../../CSS/AdminCSS/AdminModalProducts/AdminModalProductsAdd.css';
 import uploadIcon from '../../../assets/staff/stafficons/staff-prices-upload-icon.png'
 import toast from 'react-hot-toast';
 import axios from 'axios';
@@ -174,190 +174,207 @@ function StaffModalProductsAddComponent({isOpen, onClose, fetchProducts}) {
     
 
   return (
-    <div className='staff-modal-products-add-container'>
-        <form className='staff-modal-products-add-content'>
-            <div className='staff-modal-products-add-image-upload'>
-                <div className='staff-modal-products-add-image-upload-left'>
-                    <label htmlFor="file-input">
-                        <img 
-                        src={selectedImage ? URL.createObjectURL(selectedImage) : uploadIcon} 
-                        alt="upload placeholder" 
-                        className='upload-placeholder' 
-                        />
-                    </label>
-                </div>
-                <div className='staff-modal-products-add-image-upload-right'>
-                    <span className='upload-instructions'>Please upload square image, size less than 100KB</span>
-                    <div className='file-input-container'>
-                        <input 
-                        id='file-input' 
-                        type="file" 
-                        accept='image/png, image/jpeg, image/jpg' 
-                        onChange={handleFileChange}
-                        />
-                        <span className='file-input-label' onClick={handleFileInputClick}>Choose File</span>
-                        <span className='file-input-text'>{selectedImage ? 'File Chosen' : 'No File Chosen'}</span>
-                    </div>
-                </div>
+    <div className='admin-modal-products-add-container'>
+        <form className='admin-modal-products-add-form'>
+            <div className='admin-modal-products-add-header'>
+                <h3>Add New Product</h3>
+                <button onClick={onClose}>X</button>
             </div>
-            <div className='staff-modal-products-add-inputs'>
-                <div className='label-text'>
-                    
-                    <div>
-                    <label>PRODUCT CODE :</label>
-                        <input type="text" 
-                        value={dataInput.productCode} 
-                        onChange={(e) => setDataInput({...dataInput, productCode: e.target.value})}
-                        />
+            <div className='admin-modal-products-add-content'>
+                <div className='admin-modal-products-add-image-upload'>
+                    <div className='admin-modal-products-add-image-upload-left'>
+                        <label htmlFor="file-input">
+                            <img 
+                            src={selectedImage ? URL.createObjectURL(selectedImage) : uploadIcon} 
+                            alt="upload placeholder" 
+                            className='upload-placeholder' 
+                            />
+                        </label>
+                    </div>
+                    <div className='admin-modal-products-add-image-upload-right'>
+                        <span className='upload-instructions'>Please upload square image, size less than 100KB</span>
+                        <div className='file-input-container'>
+                            <input 
+                            id='file-input' 
+                            type="file" 
+                            accept='image/png, image/jpeg, image/jpg' 
+                            onChange={handleFileChange}
+                            />
+                            <span className='file-input-label' onClick={handleFileInputClick}>Choose File</span>
+                            <span className='file-input-text'>{selectedImage ? 'File Chosen' : 'No File Chosen'}</span>
+                        </div>
                     </div>
                 </div>
-                <div className='label-text'>
-                    
-                    <div>
-                    <label>PRODUCT NAME:</label>
-                        <input type="text"
-                        value={dataInput.productName} 
-                        onChange={(e) => setDataInput({...dataInput, productName: e.target.value})}
-                        />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className='label-information'>
+                        <label htmlFor="">Product Information</label>
                     </div>
-                </div>
-                <div className='label-text'>
                     
-                    <div>
-                    <label>CATEGORY:</label>
-                        <select
-                        value={dataInput.category}
-                        onChange={handleCategoryChange}
-                        >
-                            <option value="">Select Category</option>
-                            {
-                                categories && categories.length > 0 ? (
-                                    categories.map((category) => (
-                                        <option key={category._id} value={category.categoryName}>
-                                            {category.categoryName}
-                                        </option>
-                                    ))
-                                ) : (
-                                    <option value="">No categories available</option>
-                                )
-                            }
-                        </select>
-
-                    </div>
-                </div>
-                <div className='label-text'>
-                    
-                    <div>
-                    <label>SIZE UNIT:</label>
-                        <select
-                        value={dataInput.sizeUnit}
-                        onChange={handleSizeUnitChange}
-                        >
-                            <option value="">Select size unit</option>
-                            {
-                                sizeUnits.map((unit, index) => (
-                                    <option key={index} value={unit.sizeUnit}>
-                                        {unit.sizeUnit}
-                                    </option>
-                                ))
-                            }
-                        </select>
-                    </div>
-                </div>
-            </div>
-            
-            <div className='staff-modal-products-add-inputs'>
-                {
-                    dataInput.sizeUnit && (
+                    <div className='admin-modal-products-add-inputs'>
+                        <div className='label-text'>
+                            <div>
+                                <label>PRODUCT CODE:</label>
+                                <input type="text" 
+                                value={dataInput.productCode} 
+                                onChange={(e) => setDataInput({...dataInput, productCode: e.target.value})}
+                                />
+                            </div>
+                        </div>
                         <div className='label-text'>
                             
                             <div>
-                            <label>PRODUCT SIZE:</label>
-                                {renderSizeInputOptions()}
+                                <label>PRODUCT NAME:</label>
+                                <input type="text"
+                                value={dataInput.productName} 
+                                onChange={(e) => setDataInput({...dataInput, productName: e.target.value})}
+                                />
                             </div>
                         </div>
-                    )
-                }
-                <div className='label-text'>
-                   
-                    <div>
-                    <label>PRICE:</label>
-                        <input type="number"
-                        value={dataInput.price} 
-                        onChange={(e) => setDataInput({...dataInput, price: e.target.value})} 
-                        />
+                        <div className='label-text'>
+                            <div>
+                                <label>CATEGORY:</label>
+                                <select
+                                value={dataInput.category}
+                                onChange={handleCategoryChange}
+                                >
+                                    <option value="">Select Category</option>
+                                    {
+                                        categories && categories.length > 0 ? (
+                                            categories.map((category) => (
+                                                <option key={category._id} value={category.categoryName}>
+                                                    {category.categoryName}
+                                                </option>
+                                            ))
+                                        ) : (
+                                            <option value="">No categories available</option>
+                                        )
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div className='label-text'>
+                            <div>
+                                <label>SIZE UNIT:</label>
+                                <select
+                                value={dataInput.sizeUnit}
+                                onChange={handleSizeUnitChange}
+                                >
+                                    <option value="">Select size unit</option>
+                                    {
+                                        sizeUnits.map((unit, index) => (
+                                            <option key={index} value={unit.sizeUnit}>
+                                                {unit.sizeUnit}
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className='label-text'>
-                    
-                    <div>
-                    <label>QUANTITY:</label>
-                        <input type="number"
-                        value={dataInput.quantity} 
-                        onChange={(e) => setDataInput({...dataInput, quantity: e.target.value})}
-                        />
-                    </div>
-                </div>
-                <div className='label-text'>
-                    
-                    <div>
-                    <label>STOCK LEVEL:</label>
-                        <input type="number"
-                        value={dataInput.stockLevel} 
-                        onChange={(e) => setDataInput({...dataInput, stockLevel: e.target.value})}
-                        />
-                    </div>
-                </div>
-            </div>
                 
-            <div className='staff-modal-products-add-inputs'>
-                <div className='label-text'>
-                    
-                    <div>
-                    <label>DISCOUNT PERCENTAGE:</label>
-                        <input
-                        type="number"
-                        value={dataInput.discountPercentage}
-                        onChange={(e) => setDataInput({...dataInput, discountPercentage: e.target.value})}
-                        />
+                
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className='label-information'>
+                        <label htmlFor="">Stock & Pricing</label>
+                    </div>
+                    <div className='admin-modal-products-add-inputs'>
+                        {
+                            dataInput.sizeUnit && (
+                                <div className='label-text'>
+                                    <div>
+                                        <label>PRODUCT SIZE:</label>
+                                        {renderSizeInputOptions()}
+                                    </div>
+                                </div>
+                            )
+                        }
+                        <div className='label-text'>
+                            <div>
+                                <label>PRICE:</label>
+                                <input type="number"
+                                value={dataInput.price} 
+                                onChange={(e) => setDataInput({...dataInput, price: e.target.value})} 
+                                />
+                            </div>
+                        </div>
+                        <div className='label-text'>
+                            <div>
+                                <label>QUANTITY:</label>
+                                <input type="number"
+                                value={dataInput.quantity} 
+                                onChange={(e) => setDataInput({...dataInput, quantity: e.target.value})}
+                                />
+                            </div>
+                        </div>
+                        <div className='label-text'>
+                            <div>
+                                <label>STOCK LEVEL:</label>
+                                <input type="number"
+                                value={dataInput.stockLevel} 
+                                onChange={(e) => setDataInput({...dataInput, stockLevel: e.target.value})}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className='label-text'>
-                    
-                    <div>
-                    <label>DISCOUNT END:</label>
-                        <input
-                        type="date"
-                        value={dataInput.discountedDate}
-                        onChange={(e) => setDataInput({...dataInput, discountedDate: e.target.value})}
-                        />
+
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className='label-information'>
+                        <label htmlFor="">Discount & Expiry</label>
+                    </div>
+                    <div className='admin-modal-products-add-inputs'>
+                        <div className='label-text'>
+                            <div>
+                                <label>DISCOUNT PERCENTAGE:</label>
+                                <input
+                                type="number"
+                                value={dataInput.discountPercentage}
+                                onChange={(e) => setDataInput({...dataInput, discountPercentage: e.target.value})}
+                                />
+                            </div>
+                        </div>
+                        <div className='label-text'>
+                            <div>
+                                <label>DISCOUNT END:</label>
+                                <input
+                                type="date"
+                                value={dataInput.discountedDate}
+                                onChange={(e) => setDataInput({...dataInput, discountedDate: e.target.value})}
+                                />
+                            </div>
+                        </div>
+                        <div className='label-text'>
+                            <div>
+                                <label>Expiration Date:</label>
+                                <input
+                                type="date"
+                                value={dataInput.expirationDate}
+                                onChange={(e) => setDataInput({...dataInput, expirationDate: e.target.value})}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className='label-text'>
-                    
-                    <div>
-                    <label>EXPIRATION DATE:</label>
-                        <input
-                        type="date"
-                        value={dataInput.expirationDate}
-                        onChange={(e) => setDataInput({...dataInput, expirationDate: e.target.value})}
-                        />
+                
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className='label-information'>
+                        <label htmlFor="">Description</label>
+                    </div>
+                    <div className='label-text'>
+                        <div>
+                            <label>DESCRIPTION:</label>
+                            <textarea
+                                value={dataInput.description} 
+                                onChange={(e) => setDataInput({...dataInput, description: e.target.value})}
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className='label-text'>
-             
-                <div>
-                <label>DESCRIPTION:</label>
-                    <textarea
-                        value={dataInput.description} 
-                        onChange={(e) => setDataInput({...dataInput, description: e.target.value})}
-                    />
+                <div className='admin-modal-products-add-buttons'>
+                    <button onClick={handleUploadProductStaff}>OKAY</button>
+                    <button onClick={onClose}>CANCEL</button>
                 </div>
-            </div>
-            <div className='staff-modal-products-add-buttons'>
-                <button onClick={handleUploadProductStaff}>OKAY</button>
-                <button onClick={onClose}>CANCEL</button>
             </div>
         </form>
     </div>

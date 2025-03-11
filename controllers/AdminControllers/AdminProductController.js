@@ -1,47 +1,9 @@
-const multer = require('multer');
-const path = require('path');
 const ProductModel = require('../../models/ProductModel');
 const jwt = require('jsonwebtoken');
 const AdminAuthModel = require('../../models/AdminModels/AdminAuthModel');
 const { getInventoryReport } = require('./AdminReportController');
 const WorkinProgressProductModel = require('../../models/WorkinProgressProductModel');
 const upload = require('../../helpers/MulterConfig');
-
-// //set up storage engine
-// const storage = multer.diskStorage({
-//     destination: function(req, file, cb){
-//         cb(null, 'uploads/products');
-//     },
-//     // filename: function(req, file, cb){
-//     //     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-//     // }
-//     filename: function(req, file, cb){
-//         const uniqueSuffix = '-' + Date.now() + path.extname(file.originalname);
-//         cb(null, file.originalname.replace(path.extname(file.originalname), '') + uniqueSuffix);
-//     }
-// });
-
-// //initialize upload
-// const upload = multer({
-//     storage: storage,
-//     limits: {fileSize: 5 * 1024 * 1024},
-//     fileFilter: function(req, file, cb){
-//         checkFileType(file, cb);
-//     }
-// }).single('image');
-
-// //check file type
-// function checkFileType(file, cb){
-//     const filetypes = /jpeg|jpg|png/;
-//     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-//     const mimetype = filetypes.test(file.mimetype);
-
-//     if(mimetype && extname){
-//         return cb(null, true);
-//     } else{
-//         cb('Error: Images Only!');
-//     }
-// }
 
 
 const uploadProductAdmin = async(req, res) => {
@@ -98,10 +60,26 @@ const uploadProductAdmin = async(req, res) => {
                     expirationDate,
                 });
 
-                //determine batch based on existing batch or create a new one
-                const batch = existingBatch
-                    ? `Batch ${existingBatch.batch.split(' ')[1]}` //same batch if expirationDate matches
-                    : `Batch ${await ProductModel.countDocuments() + 1}`; //new batch if no match
+                let batch;
+                if(existingBatch){
+                    //use the same batch if expirationDate matches
+                    batch = existingBatch.batch;
+                } else {
+                    //get all existing batches
+                    const allBatches = await ProductModel.distinct('batch');
+                    
+                    //extract the batch numbers and find the highest one
+                    const batchNumbers = allBatches.map(b => {
+                        const match = b.match(/Batch\s+(\d+)/i);
+                        return match ? parseInt(match[1]) : 0;
+                    });
+                    
+                    //find the highest batch number
+                    const highestBatchNumber = batchNumbers.length > 0 ? Math.max(...batchNumbers) : 0;
+                    
+                    //create new batch with the next sequential number
+                    batch = `Batch ${highestBatchNumber + 1}`;
+                }
 
                 const discountedPrice = discountPercentage > 0
                     ? price - (price * discountPercentage) / 100
@@ -139,7 +117,6 @@ const uploadProductAdmin = async(req, res) => {
                     true
                 );
                 
-
                 return res.json({
                     message: 'Product added successfully!',
                     newProduct,
@@ -153,7 +130,6 @@ const uploadProductAdmin = async(req, res) => {
         }
     });
 };
-
 
 
 const getProductAdmin = async(req, res) => {
@@ -211,96 +187,6 @@ const deleteProductAdmin = async(req, res) => {
 };
 
 
-
-// const editProductAdmin = async(req, res) => {
-//     upload(req, res, async(err) => {
-//         if(err){
-//             return res.json({error: err});
-//         }
-
-//         try {
-//             const {productId} = req.params;
-//             const {
-//                 productCode, 
-//                 productName, 
-//                 category, 
-//                 price, 
-//                 quantity, 
-//                 stockLevel, 
-//                 discountPercentage = 0, 
-//                 discountedDate, 
-//                 sizeUnit, 
-//                 productSize, 
-//                 expirationDate,
-//                 description,
-//                 refillPrice
-//             } = req.body;
-//             const imageUrl = req.file ? req.file.path : '';
-
-//             if(!productCode || !productName || !category || !price || !stockLevel || !productSize || !expirationDate){
-//                 return res.json({
-//                     error: 'Please provide all required fields'
-//                 });
-//             }
-
-//             const product = await ProductModel.findById(productId);
-//             if(!product){
-//                 return res.json({
-//                     error: 'Product not found'
-//                 });
-//             }
-
-//             // //calculate discountedPrice
-//             // const discountedPrice = price - (price * discountPercentage / 100);
-//             const currentDate = new Date();
-//             let discountedPrice = price;
-
-//             if(discountPercentage > 0 && discountedDate && new Date(discountedDate) > currentDate){
-//                 discountedPrice = price - (price * discountPercentage / 100);
-//             } else{
-//                 //reset discount if expired or invalid
-//                 product.discountPercentage = 0;
-//                 product.discountedDate = null;
-//             }
- 
-
-//             //update product fields
-//             product.productCode = productCode;
-//             product.productName = productName;
-//             product.category = category;
-//             product.price = price;
-//             product.discountedPrice = discountedPrice;
-//             product.quantity = quantity;
-//             product.stockLevel = stockLevel;
-//             product.discountPercentage = discountPercentage;
-//             product.sizeUnit = sizeUnit;
-//             product.productSize = productSize;
-//             product.expirationDate = expirationDate;
-//             product.discountedDate = discountedDate;
-//             product.description = description;
-//             product.refillPrice = refillPrice;
-//             if(imageUrl){
-//                 product.imageUrl = imageUrl;
-//             }
-
-//             const updatedProduct = await product.save();
-
-
-//             await getInventoryReport(product._id, productName, sizeUnit, productSize, category, quantity);
-
-
-//             return res.json({
-//                 message: 'Product updated successfully!',
-//                 updatedProduct
-//             });
-//         } catch (error) {
-//             console.error(error);
-//             return res.status(500).json({
-//                 message: 'Server error'
-//             });
-//         }
-//     });
-// };
 //updated
 const editProductAdmin = async(req, res) => {
     upload(req, res, async (err) => {
@@ -339,58 +225,127 @@ const editProductAdmin = async(req, res) => {
                 });
             }
 
-            //check if expirationDate has changed
-            let batch;
-            if(expirationDate !== product.expirationDate){
-                //if expirationDate changed, check for an existing product with the same expirationDate
-                const existingBatch = await ProductModel.findOne({ expirationDate });
+            //check if expiration date has changed
+            if(expirationDate !== product.expirationDate) {
+                //create a new product instead of updating the existing one
+                
+                //check for an existing product with the same expirationDate
+                const existingBatch = await ProductModel.findOne({expirationDate});
 
-                //assign the existing batch or create a new batch
-                batch = existingBatch ? `Batch ${existingBatch.batch.split(' ')[1]}` : `Batch ${await ProductModel.countDocuments() + 1}`;
-            } else{
-                //if expirationDate didn't change, keep the existing batch
-                batch = product.batch;
+                let newBatch;
+                if(existingBatch){
+                    //use the same batch if expirationDate matches
+                    newBatch = existingBatch.batch;
+                } else{
+                    //get all existing batches
+                    const allBatches = await ProductModel.distinct('batch');
+                    
+                    //extract the batch numbers and find the highest one
+                    const batchNumbers = allBatches.map(b => {
+                        const match = b.match(/Batch\s+(\d+)/i);
+                        return match ? parseInt(match[1]) : 0;
+                    });
+                    
+                    //find the highest batch number
+                    const highestBatchNumber = batchNumbers.length > 0 ? Math.max(...batchNumbers) : 0;
+                    
+                    //create new batch with the next sequential number
+                    newBatch = `Batch ${highestBatchNumber + 1}`;
+                }
+
+                //calculate discounted price for the new product
+                const currentDate = new Date();
+                let newDiscountedPrice = price;
+
+                if(discountPercentage > 0 && discountedDate && new Date(discountedDate) > currentDate){
+                    newDiscountedPrice = price - (price * discountPercentage / 100);
+                }
+
+                //get the uploader info from the original product
+                const uploaderId = product.uploaderId;
+                const uploaderType = product.uploaderType;
+                const createdBy = product.createdBy;
+
+                //create a new product with the new expiration date
+                const newProduct = await ProductModel.create({
+                    productCode,
+                    productName,
+                    category,
+                    price,
+                    discountedPrice: newDiscountedPrice,
+                    discountPercentage,
+                    quantity: !isNaN(quantity) ? Number(quantity) : 0,
+                    stockLevel,
+                    discountedDate,
+                    imageUrl: imageUrl || product.imageUrl,
+                    sizeUnit,
+                    productSize,
+                    uploaderId,
+                    uploaderType,
+                    expirationDate,
+                    description,
+                    createdBy,
+                    batch: newBatch,
+                });
+                
+                await getInventoryReport(
+                    newProduct._id,
+                    newProduct.productName,
+                    newProduct.sizeUnit,
+                    newProduct.productSize,
+                    newProduct.category,
+                    newProduct.quantity,
+                    true
+                );
+
+                return res.json({
+                    message: 'New product created with updated expiration date!',
+                    originalProduct: product,
+                    newProduct
+                });
+            } else {
+                //if expiration date didn't change, update the existing product as before
+                let batch = product.batch;
+
+                //calculate discounted price
+                const currentDate = new Date();
+                let discountedPrice = price;
+
+                if(discountPercentage > 0 && discountedDate && new Date(discountedDate) > currentDate){
+                    discountedPrice = price - (price * discountPercentage / 100);
+                } else{
+                    //reset discount if expired or invalid
+                    product.discountPercentage = 0;
+                    product.discountedDate = null;
+                }
+
+                //update product fields
+                product.productCode = productCode;
+                product.productName = productName;
+                product.category = category;
+                product.price = price;
+                product.discountedPrice = discountedPrice;
+                product.quantity = !isNaN(quantity) ? Number(quantity) : 0;
+                product.stockLevel = stockLevel;
+                product.discountPercentage = discountPercentage;
+                product.sizeUnit = sizeUnit;
+                product.productSize = productSize;
+                product.discountedDate = discountedDate;
+                product.description = description;
+                product.batch = batch;
+                if(imageUrl){
+                    product.imageUrl = imageUrl;
+                }
+
+                const updatedProduct = await product.save();
+
+                await getInventoryReport(product._id, productName, sizeUnit, productSize, category, quantity);
+
+                return res.json({
+                    message: 'Product updated successfully!',
+                    updatedProduct
+                });
             }
-
-            //calculate discounted price
-            const currentDate = new Date();
-            let discountedPrice = price;
-
-            if(discountPercentage > 0 && discountedDate && new Date(discountedDate) > currentDate){
-                discountedPrice = price - (price * discountPercentage / 100);
-            } else{
-                //reset discount if expired or invalid
-                product.discountPercentage = 0;
-                product.discountedDate = null;
-            }
-
-            //udate product fields
-            product.productCode = productCode;
-            product.productName = productName;
-            product.category = category;
-            product.price = price;
-            product.discountedPrice = discountedPrice;
-            product.quantity = !isNaN(quantity) ? Number(quantity) : 0;
-            product.stockLevel = stockLevel;
-            product.discountPercentage = discountPercentage;
-            product.sizeUnit = sizeUnit;
-            product.productSize = productSize;
-            product.expirationDate = expirationDate;
-            product.discountedDate = discountedDate;
-            product.description = description;
-            product.batch = batch;
-            if(imageUrl){
-                product.imageUrl = imageUrl;
-            }
-
-            const updatedProduct = await product.save();
-
-            await getInventoryReport(product._id, productName, sizeUnit, productSize, category, quantity);
-
-            return res.json({
-                message: 'Product updated successfully!',
-                updatedProduct
-            });
         } catch (error) {
             console.error(error);
             return res.status(500).json({
@@ -399,7 +354,6 @@ const editProductAdmin = async(req, res) => {
         }
     });
 };
-
 
 
 const getEditProductAdmin = async(req, res) => {
@@ -422,35 +376,6 @@ const getEditProductAdmin = async(req, res) => {
 
 
 
-// const getStatisticsAdmin = async(req, res) => {
-//     try {
-//         //count distinct categories
-//         const categoryCount = await ProductModel.distinct('category').countDocuments();
-
-//         //count total products
-//         const totalProducts = await ProductModel.countDocuments();
-
-//         //sum of all units produced (quantity field)
-//         const totalUnitsProduced = await ProductModel.aggregate([
-//             {$group: {_id: null, totalQuantity: {$sum: '$quantity'}}}
-//         ]);
-
-//         //count of low stock items (quantity < 10)
-//         const lowStockCount = await ProductModel.countDocuments({quantity: {$lt: 10}});
-
-//         res.json({
-//             categoryCount,
-//             totalProducts,
-//             totalUnitsProduced: totalUnitsProduced[0]?.totalQuantity || 0,
-//             lowStockCount
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({
-//             message: 'Server error'
-//         });
-//     }
-// };
 const getProductSummaryAdmin = async(req, res) => {
     try {
 
