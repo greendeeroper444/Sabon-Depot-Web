@@ -132,7 +132,6 @@ function AdminRefillProductPage() {
                 <tr>
                     <th>Product Name</th>
                     <th>Liquid Level</th>
-                    <th>Drum Quantity</th>
                     <th>Volume (L)</th>
                     <th>Actions</th>
                 </tr>
@@ -140,7 +139,7 @@ function AdminRefillProductPage() {
             <tbody>
                 {
                     filteredRefillProducts.map((product) => {
-                        const waterLevel = (product.volume / product.maximumSizeLiter) * 100;
+                        const waterLevel = (product.quantity / product.quantity) * 100;
                         
                         return (
                             <tr key={product._id}>
@@ -153,8 +152,7 @@ function AdminRefillProductPage() {
                                         ></div>
                                     </div>
                                 </td>
-                                <td>{product.drum} Drum</td>
-                                <td>{product.volume}L</td>
+                                <td>{product.quantity}L</td>
                                 <td>
                                     <button onClick={() => handleEditProductClick(product._id)}>Edit</button>
                                     {' '}

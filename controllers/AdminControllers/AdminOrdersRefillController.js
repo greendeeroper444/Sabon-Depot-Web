@@ -2,8 +2,10 @@ const AdminAuthModel = require("../../models/AdminModels/AdminAuthModel");
 const jwt = require('jsonwebtoken');
 const StaffCartRefillModel = require("../../models/StaffModels/StaffCartRefillModel");
 const RefillProductModel = require("../../models/RefillProductModel");
-const RefillDeductModel = require("../../models/RefillDeductModel");
 const StaffOrderRefillModel = require("../../models/StaffModels/StaffOrderRefillModel");
+const { BestSellingModel, TotalSaleModel } = require("../../models/SalesOverviewModel");
+const ProductionReportModel = require("../../models/ProductionReportModel");
+const { getInventoryReport, getSalesReport } = require("../AdminControllers/AdminReportController");
 
 //create order via staff
 const addOrderRefillAdmin = async(req, res) => {
@@ -42,7 +44,7 @@ const addOrderRefillAdmin = async(req, res) => {
             }
 
             //calculate total amount
-            const totalAmount = cartItems.reduce((acc, item) => acc + item.price * item.volume, 0);
+            const totalAmount = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
             //create the order
             const order = new StaffOrderRefillModel({
@@ -52,8 +54,8 @@ const addOrderRefillAdmin = async(req, res) => {
                     productName: item.productName,
                     category: item.productId.category || '',
                     price: item.price,
-                    finalPrice: item.price * item.volume,
-                    volume: item.volume,
+                    finalPrice: item.price * item.quantity,
+                    quantity: item.quantity,
                     uploaderId: item.productId.uploaderId,
                     uploaderType: item.productId.uploaderType,
                     sizeUnit: item.sizeUnit,
@@ -71,32 +73,114 @@ const addOrderRefillAdmin = async(req, res) => {
 
             await order.save();
 
-            // Update stock for each ordered product and record deductions
-            await Promise.all(
-                cartItems.map(async(item) => {
-                    const product = await RefillProductModel.findById(item.productId._id);
-                    if(product){
-                        // Calculate how many drums are needed for the volume
-                        // Assuming 1 drum = 1 unit (adjust calculation as needed)
-                        const drumsNeeded = Math.ceil(item.volume / product.maximumSizeLiter);
-                        
-                        // Deduct drums from RefillProductModel
-                        product.drum -= drumsNeeded;
-                        await product.save();
-                        
-                        // Record the deduction in RefillDeductModel
-                        await new RefillDeductModel({
-                            productId: product._id,
-                            productName: product.productName,
-                            category: product.category,
-                            price: product.price,
-                            volume: item.volume,
-                            drum: drumsNeeded,
-                            color: product.color,
-                        }).save();
-                    }
-                })
-            );
+            //update product quantities based on the order
+            await Promise.all(cartItems.map(async (item) => {
+                await RefillProductModel.findByIdAndUpdate(item.productId._id, {
+                    $inc: {quantity: -item.quantity} //decrease product quantity
+                });
+
+
+                const today = new Date();
+                today.setUTCHours(0, 0, 0, 0); //set time to midnight for the day field
+
+                //production report
+                const existingProductionReport = await ProductionReportModel.findOne({
+                    productId: item.productId._id,
+                    date: today,
+                });
+
+                if(existingProductionReport){
+                    await ProductionReportModel.updateOne(
+                        {_id: existingProductionReport._id},
+                        {$inc: {productionQuantity: item.quantity}}
+                    );
+                } else {
+                    await ProductionReportModel.create({
+                        productId: item.productId._id,
+                        productName: item.productId.productName,
+                        productionQuantity: item.quantity,
+                        date: today,
+                    });
+                }
+
+
+                //total sales
+                const existingRecord = await TotalSaleModel.findOne({
+                    productName: item.productId.productName,
+                    day: today,
+                });
+
+                if(existingRecord){
+                    //update existing record
+                    await TotalSaleModel.updateOne(
+                        {_id: existingRecord._id},
+                        {
+                            $inc: {
+                                totalProduct: 1,
+                                totalSales: item.productId.price * item.quantity,
+                                quantitySold: item.quantity,
+                            },
+                        }
+                    );
+                } else{
+                    //create a new record
+                    await TotalSaleModel.create({
+                        productName: item.productId.productName,
+                        totalProduct: 1,
+                        price: item.productId.price,
+                        totalSales: item.productId.price * item.quantity,
+                        quantitySold: item.quantity,
+                        day: today,
+                    });
+                }
+
+                //get all best selling
+                //update bestSellingRecord model
+                const bestSellingRecord = await BestSellingModel.findOne({productId: item.productId._id});
+                if(bestSellingRecord){
+                    //update existing record
+                    bestSellingRecord.totalProduct += 1;
+                    bestSellingRecord.totalSales += item.price * item.quantity;
+                    bestSellingRecord.quantitySold += item.quantity;
+                    bestSellingRecord.lastSoldAt = Date.now();
+                    await bestSellingRecord.save();
+                } else{
+                    //create a new record
+                    await BestSellingModel.create({
+                        productId: item.productId._id,
+                        productName: item.productId.productName,
+                        price: item.productId.price,
+                        totalSales: item.price * item.quantity,
+                        quantitySold: item.quantity,
+                        sizeUnit: item.productId.sizeUnit,
+                        productSize: item.productId.productSize,
+                        lastSoldAt: Date.now(),
+                    });
+                }
+
+
+                // await getInventoryReport(
+                //     item.productId._id,
+                //     item.productId.productName,
+                //     item.productId.sizeUnit,
+                //     item.productId.productSize,
+                //     item.productId.category,
+                //     item.quantity,
+                //     true
+                // );
+    
+                await getSalesReport(
+                    item.productId._id,
+                    item.productId.productName,
+                    item.productId.sizeUnit,
+                    item.productId.category,
+                    item.productId.price,
+                    item.quantity,
+                    true
+                );
+
+            }));
+    
 
             //clear the cart
             await StaffCartRefillModel.deleteMany({adminId});
@@ -109,7 +193,9 @@ const addOrderRefillAdmin = async(req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ 
+            message: 'Server error' 
+        });
     }
 };
 
@@ -163,9 +249,9 @@ const getAllOrderRefillAdmin = async(req, res) => {
 const updateOrderRefillAdmin = async(req, res) => {
     try {
         const {orderId} = req.params;
-        const {productCode, productName, category, quantity} = req.body;
+        const {productName, category, quantity} = req.body;
 
-        if(!productCode || !productName || !category || !quantity){
+        if(!productName || !category || !quantity){
             return res.json({
                 error: 'Please provide all required fields'
             });
@@ -179,7 +265,7 @@ const updateOrderRefillAdmin = async(req, res) => {
         }
 
         //eemove ownership check
-        order.productCode = productCode;
+        // order.productCode = productCode;
         order.productName = productName;
         order.category = category;
         order.quantity = quantity;

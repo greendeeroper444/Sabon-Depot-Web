@@ -168,10 +168,10 @@ function AdminOrdersRefillPage() {
                                 {/* <td><input type='checkbox' onClick={handleCheckboxClick} /></td> */}
                                 <td>{order.orderNumber}</td>
                                 <td>{item.productName || "N/A"}</td>
-                                <td>{item.volume || 0}</td>
+                                <td>{item.quantity || 0}</td>
                                 <td>{item.productSize}</td>
                                 <td>{`₱${(item.price ?? 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
-                                <td>{`₱${((item.price ?? 0) * (item.volume ?? 0)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
+                                <td>{`₱${((item.price ?? 0) * (item.quantity ?? 0)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
                                 <td>{orderDate(order.createdAt)}</td>
                             </tr>
                         ))

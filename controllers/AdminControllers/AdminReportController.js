@@ -1,66 +1,10 @@
-const { generateInventoryReport, generateSalesReport } = require("../../helpers/DailyReport");
 const AdminInventoryReportModel = require("../../models/AdminModels/AdminInventoryReportModel");
 const SalesReportModel = require("../../models/AdminModels/AdminSalesReportModel");
 const ProductModel = require("../../models/ProductModel");
+const RefillProductModel = require("../../models/RefillProductModel");
 
-// const getInventoryReport = async(productId, productName, sizeUnit, productSize, category, orderQuantity, isOrder = false) => {
-//     const reportDate = new Date();
-//     reportDate.setHours(0, 0, 0, 0);
-
-//     //define today's date range for the query to limit to current day's records only
-//     const startOfDay = reportDate;
-//     const endOfDay = new Date(reportDate.getTime() + 24 * 60 * 60 * 1000);
-
-//     //check for an existing report for the same product on the current date
-//     let existingReport = await AdminInventoryReportModel.findOne({
-//         productId,
-//         reportDate: {
-//             $gte: startOfDay,
-//             $lt: endOfDay
-//         }
-//     });
-
-//     if(existingReport){
-//         //update existing report if it's already created for today
-//         existingReport.productName = productName;
-//         existingReport.sizeUnit = sizeUnit;
-//         existingReport.productSize = productSize;
-//         existingReport.category = category;
-
-//         if(isOrder){
-//             //subtract the ordered quantity from the current quantity
-//             existingReport.quantity -= orderQuantity;
-//         } else{
-//             //set quantity directly if not an order (e.g., inventory update)
-//             existingReport.quantity = orderQuantity;
-//         }
-
-//         await existingReport.save();
-//     } else{
-//         //if no report exists for today, create a new report
-//         const currentProduct = await ProductModel.findById(productId).select('quantity');
-//         const initialQuantity = isOrder 
-//             ? currentProduct.quantity - orderQuantity
-//             : orderQuantity;
-
-//         await AdminInventoryReportModel.create({
-//             productId,
-//             productName,
-//             sizeUnit,
-//             productSize,
-//             category,
-//             quantity: initialQuantity,
-//             reportDate: startOfDay
-//         });
-//     }
-// };
-
-
-
-
-//gey invnetory report
-
-const getInventoryReport = async(productId, productName, sizeUnit, productSize, category, quantity, isOrder = false) => {
+//get inventory report
+const getInventoryReport = async(productId, productName, sizeUnit, productSize, category, quantity, isOrder = false, isRefill = false) => {
     const reportDate = new Date();
     reportDate.setHours(0, 0, 0, 0);
 
@@ -84,11 +28,10 @@ const getInventoryReport = async(productId, productName, sizeUnit, productSize, 
         existingReport.productSize = productSize;
         existingReport.category = category;
         existingReport.quantity = quantity;
-
+        existingReport.isRefill = isRefill;
        
         await existingReport.save();
     } else{
-
         await AdminInventoryReportModel.create({
             productId,
             productName,
@@ -96,6 +39,7 @@ const getInventoryReport = async(productId, productName, sizeUnit, productSize, 
             productSize,
             category,
             quantity,
+            isRefill,
             reportDate: startOfDay
         });
     }
@@ -113,11 +57,6 @@ const getInventoryReportsAdmin = async(req, res) => {
     }
 }
 
-
-
-
-
-
 const getSalesReport = async(
     productId,
     productName,
@@ -125,13 +64,21 @@ const getSalesReport = async(
     category,
     price,
     unitsSold,
+    isRefill = false
 ) => {
     try {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
 
         //find the product to retrieve inventory details
-        const product = await ProductModel.findById(productId);
+        let product;
+        
+        if(isRefill) {
+            product = await RefillProductModel.findById(productId);
+        } else {
+            product = await ProductModel.findById(productId);
+        }
+        
         if(!product){
             throw new Error("Product not found");
         }
@@ -140,6 +87,7 @@ const getSalesReport = async(
         let salesReport = await SalesReportModel.findOne({
             productId,
             reportDate: today,
+            isRefill
         });
 
         if(salesReport){
@@ -160,6 +108,7 @@ const getSalesReport = async(
                 unitsSold,
                 totalRevenue: product.price * unitsSold,
                 initialQuantity: product.quantity + unitsSold,
+                isRefill,
                 reportDate: today,
             });
         }
@@ -186,7 +135,6 @@ const getSalesReportsAdmin = async(req, res) => {
         });
     }
 };
-
 
 
 const updateInventoryReportNames = async(req, res) => {

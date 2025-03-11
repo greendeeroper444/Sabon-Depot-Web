@@ -7,19 +7,18 @@ import Draggable from 'react-draggable';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import PropTypes from 'prop-types';
-import { calculateFinalRefillPriceModalStaff, calculateSubtotalModalStaff } from '../../../../utils/StaffCalculateVolume';
+import { calculateSubtotalModalStaff } from '../../../../utils/StaffCalculateVolume';
 
 function AdminModalRefillingContentDetailsComponent({isOpen, onClose, cartItems, setCartItems, adminId}) {
     const navigate = useNavigate();
     const [cashReceived, setCashReceived] = useState('');
     const [changeTotal, setChangeTotal] = useState(0);
-    const [sizeUnits, setSizeUnits] = useState('Liter');
 
     const handleVolumeChange = (cartItemId, newVolume) => {
         if(newVolume === '' || newVolume < 1){
             //allow empty string for backspacing
             const updatedCartItems = cartItems.map(item =>
-                item._id === cartItemId ? {...item, volume: newVolume} : item
+                item._id === cartItemId ? {...item, quantity: newVolume} : item
             );
             setCartItems(updatedCartItems);
             return;
@@ -28,13 +27,12 @@ function AdminModalRefillingContentDetailsComponent({isOpen, onClose, cartItems,
         try {
             axios.put('/adminCartRefill/updateProductVolumeRefillAdmin', {
                 cartItemId,
-                volume: parseFloat(newVolume) || 1, //convert when sending to backend
-                sizeUnit: sizeUnits[cartItemId] || 'Liter'
+                quantity: parseFloat(newVolume) || 1,
             }).then(response => {
                 if(response.data.success){
                     const updatedCartItems = cartItems.map(item =>
                         item._id === cartItemId
-                            ? {...item, volume: parseFloat(newVolume) || 1}
+                            ? {...item, quantity: parseFloat(newVolume) || 1}
                             : item
                     );
                     setCartItems(updatedCartItems);
@@ -79,35 +77,7 @@ function AdminModalRefillingContentDetailsComponent({isOpen, onClose, cartItems,
         }
     };
     
-
-    const handleSizeUnitChange = async(cartItemId, newUnit) => {
-        setSizeUnits(prev => ({...prev, [cartItemId]: newUnit}));
     
-        try {
-            const response = await axios.put('/adminCartRefill/updateProductVolumeRefillAdmin', {
-                cartItemId,
-                volume: cartItems.find(item => item._id === cartItemId)?.volume || 1,
-                sizeUnit: newUnit
-            });
-    
-            if(response.data.success){
-                const updatedCartItems = cartItems.map(item =>
-                    item._id === cartItemId
-                    ? {...item, sizeUnit: newUnit}
-                    : item
-                );
-                setCartItems(updatedCartItems);
-            } else {
-                toast.error(response.data.message || 'Failed to update size unit.');
-            }
-        } catch (error) {
-            console.error('Error updating size unit:', error);
-            toast.error('Failed to update size unit. Please try again.');
-        }
-    };
-    
-
-    //handle checkout
     const handleCheckout = async() => {
         if(cartItems.length === 0){
             toast.error('Cart is empty!');
@@ -127,7 +97,7 @@ function AdminModalRefillingContentDetailsComponent({isOpen, onClose, cartItems,
                 items: cartItems.map((item) => ({
                     productId: item.productId._id,
                     productName: item.productId.productName,
-                    volume: item.volume,
+                    quantity: item.quantity,
                     price: item.price,
                     productSize: item.productSize,
                     sizeUnit: item.sizeUnit,
@@ -230,7 +200,7 @@ function AdminModalRefillingContentDetailsComponent({isOpen, onClose, cartItems,
                                             <div
                                             className='water'
                                             style={{
-                                            height: `${(cartItem.productId.volume/ cartItem.productId.maximumSizeLiter) * 100}%`,
+                                            height: `${(cartItem.quantity/ cartItem.quantity) * 100}%`,
                                             background: cartItem.productId.color
                                             }}
                                             ></div>
@@ -239,31 +209,23 @@ function AdminModalRefillingContentDetailsComponent({isOpen, onClose, cartItems,
                                         <div className='customer-modal-product-items-content'>
                                             <span>{cartItem.productId.productName}</span>
                                             {/* <p style={{ fontSize: '12px' }}>{cartItem.productId.productSize} Liter</p> */}
-                                            <p  style={{ fontSize: '12px' }}>{cartItem.productId.volume} Liter</p>
+                                            <p  style={{ fontSize: '12px' }}>{cartItem.productId.quantity} Liter</p>
                                             <p>
                                             <input
-                                            type='text'
-                                            value={cartItem.volume}
+                                            type="number"
+                                            step="any"
+                                            value={cartItem.quantity}
                                             onChange={(e) => handleVolumeChange(cartItem._id, e.target.value)}
-                                            className='input-quantity-update'
+                                            className="input-quantity-update"
                                             />
-
-                                                {/* select size unit */}
-                                                <select
-                                                    value={sizeUnits[cartItem._id] || 'Liter'}
-                                                    onChange={(e) => handleSizeUnitChange(cartItem._id, e.target.value)}
-                                                >
-                                                    <option value="Liter">Liter</option>
-                                                    <option value="Mililiter">Mililiter</option>
-                                                    <option value="Gallon">Gallon</option>
-                                                </select>
-                                                <span>X</span>
-                                                <input
-                                                type='text'
-                                                value={cartItem.price || ''} 
-                                                onChange={(e) => handlePriceChange(cartItem._id, e.target.value)}
-                                                className='input-price-display'
-                                                />
+                                            <span>Liters</span>
+                                            <span>X</span>
+                                            <input
+                                            type='text'
+                                            value={cartItem.price || ''} 
+                                            onChange={(e) => handlePriceChange(cartItem._id, e.target.value)}
+                                            className='input-price-display'
+                                            />
 
                                             </p>
                                         </div>
@@ -338,9 +300,9 @@ AdminModalRefillingContentDetailsComponent.propTypes = {
                 productName: PropTypes.string.isRequired,
                 sizeUnit: PropTypes.string.isRequired,
                 productSize2: PropTypes.string.isRequired,
-                volume: PropTypes.number.isRequired,
+                quantity: PropTypes.number.isRequired,
             }).isRequired,
-            volume: PropTypes.number.isRequired,
+            quantity: PropTypes.number.isRequired,
             finalPrice: PropTypes.number,
         })
     ).isRequired,

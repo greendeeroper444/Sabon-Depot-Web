@@ -16,7 +16,7 @@ const StaffCartRefillSchema = new mongoose.Schema({
         ref: 'RefillProduct',
     },
     productName: {type: String}, 
-    volume: {
+    quantity: {
         type: Number,
     },
     price: { 
@@ -24,7 +24,6 @@ const StaffCartRefillSchema = new mongoose.Schema({
     },
     sizeUnit: {
         type: String, //Mililiter, Liter, Gallon
-        default: 'Liter'
     },
     productSize: {
         type: String, //like 200ml, 2l, 1gal

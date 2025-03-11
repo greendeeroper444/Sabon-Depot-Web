@@ -14,23 +14,22 @@ const RefillProductSchema = new mongoose.Schema({
     },
     price: {
         type: Number,
-        default: 0
+        required: true
     },
-    volume: {
-        type: Number,
-        default: 105
-    },
-    maximumSizeLiter: {
-        type: Number,
-        default: 105
-    },
-    drum: {
+    quantity: {
         type: Number,
         required: true
     },
     color: {
         type: String,
         default: 'blue'
+    },
+    sizeUnit: {
+        type: String,
+        default: 'Liters'
+    },
+    productSize: {
+        type: String,
     },
     uploaderId: { 
         type: mongoose.Schema.Types.ObjectId, 

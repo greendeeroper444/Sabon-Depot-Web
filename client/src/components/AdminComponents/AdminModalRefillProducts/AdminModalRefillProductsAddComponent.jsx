@@ -9,7 +9,8 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
     const [dataInput, setDataInput] = useState({
         productName: '', 
         category: '', 
-        drum: '', 
+        quantity: '', 
+        price: '', 
         color: '#ff0000'
     })
     const [showPicker, setShowPicker] = useState(false);
@@ -55,19 +56,19 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
 
     const handleAddProductAdmin = async (e) => {
         e.preventDefault();
-        const {productName, category, drum, color} = dataInput;
+        const {productName, category, quantity, price, color} = dataInput;
     
-        if(!productName || !category || !drum){
+        if(!productName || !category || !price || !quantity){
             toast.error('Please input all fields');
             return;
         }
     
-        // if(volume > 105){
-        //     toast.error('volume cannot exceed 105');
+        // if(quantity > 105){
+        //     toast.error('quantity cannot exceed 105');
         //     return;
         // }
 
-        const productData = {productName, category, drum, color};
+        const productData = {productName, category, quantity, price, color};
     
         try {
             const response = await axios.post('/adminRefillProduct/addRefillProductAdmin', productData, {
@@ -82,7 +83,8 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
                 setDataInput({ 
                     productName: '', 
                     category: '', 
-                    drum: '', 
+                    quantity: '', 
+                    price: '', 
                     color: '#ff0000'
                 });
                 toast.success(response.data.message);
@@ -141,14 +143,22 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
                         </div>
                         <div className='label-text'>
                             <div>
-                                <label>Drum Quantity:</label>
+                                <label>Volume:</label>
                                 <input type="number"
-                                value={dataInput.drum} 
-                                onChange={(e) => setDataInput({...dataInput, drum: e.target.value})} 
+                                value={dataInput.quantity} 
+                                onChange={(e) => setDataInput({...dataInput, quantity: e.target.value})} 
                                 />
                             </div>
                         </div>
-                        
+                        <div className='label-text'>
+                            <div>
+                                <label>Price:</label>
+                                <input type="number"
+                                value={dataInput.price} 
+                                onChange={(e) => setDataInput({...dataInput, price: e.target.value})} 
+                                />
+                            </div>
+                        </div>
                         <div style={{ position: 'relative' }}>
                             <label style={{ fontWeight: 'bold', fontSize: '10px' }}>COLOR:</label>
                             <div style={{ position: 'relative' }}>

@@ -32,7 +32,7 @@ const StaffOrderRefillSchema = new mongoose.Schema({
             category: String,
             price: Number,
             finalPrice: Number,
-            volume: Number,
+            quantity: Number,
             uploaderId: mongoose.Schema.Types.ObjectId,
             uploaderType: String,
             sizeUnit:  String,

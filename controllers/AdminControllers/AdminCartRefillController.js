@@ -5,7 +5,7 @@ const RefillProductModel = require("../../models/RefillProductModel");
 const mongoose = require('mongoose')
 
 const addProductToCartRefillAdmin = async(req, res) => {
-    const {productId, volume, sizeUnit} = req.body;
+    const {productId, quantity, price} = req.body;
     const token = req.cookies.token;
 
     if(!token){
@@ -37,61 +37,17 @@ const addProductToCartRefillAdmin = async(req, res) => {
                 });
             }
 
-            //convert volume based on selected unit
-            let convertedVolume = volume;
-            if(sizeUnit === 'Milliliter'){
-                convertedVolume = volume / 1000; //convert ml to L
-            } else if(sizeUnit === 'Gallon'){
-                convertedVolume = volume * 3.785; //convert Gallon to L
-            }
+            const productSize = `${quantity}L`;
 
-            // Calculate drums needed
-            const drumsNeeded = Math.ceil(convertedVolume / product.maximumSizeLiter);
-            
-            // Check if enough drums are available
-            if(product.drum < drumsNeeded){
-                return res.status(400).json({ 
-                    error: 'Not enough drums available' 
-                });
-            }
-
-            const price = product.price;
-            let existingCartItem = await StaffCartRefillModel.findOne({adminId, productId});
-
-            let unit = sizeUnit || 'Liter';
-            let productSize = `${volume}${unit === 'Liter' ? 'L' : unit === 'Milliliter' ? 'ml' : 'Gal'}`;
-            
-            if(existingCartItem){
-                // Calculate total volume and drums needed after adding to cart
-                const totalVolume = convertedVolume + existingCartItem.volume;
-                const totalDrumsNeeded = Math.ceil(totalVolume / product.maximumSizeLiter);
-                
-                // Check if enough drums are available for the updated total
-                if(product.drum < totalDrumsNeeded){
-                    return res.status(400).json({ 
-                        error: 'Not enough drums available for the requested amount' 
-                    });
-                }
-
-                // Update existing cart item
-                existingCartItem.volume += convertedVolume;
-                existingCartItem.drum = totalDrumsNeeded; // Add drum field to cart model
-                existingCartItem.productSize = `${existingCartItem.volume}${sizeUnit === 'Liter' ? 'L' : sizeUnit === 'Milliliter' ? 'ml' : 'Gal'}`;
-                existingCartItem.updatedAt = Date.now();
-                await existingCartItem.save();
-            } else {
-                await new StaffCartRefillModel({
-                    adminId,
-                    productId,
-                    volume: convertedVolume,
-                    drum: drumsNeeded, // Add drum field to cart model
-                    price,
-                    productName: product.productName,
-                    productSizeLiter: product.volume,
-                    sizeUnit: sizeUnit,
-                    productSize: productSize, 
-                }).save();
-            }
+            await new StaffCartRefillModel({
+                adminId,
+                productId,
+                productName: product.productName,
+                quantity,
+                price: product.price,
+                sizeUnit: product.sizeUnit,
+                productSize
+            }).save();
 
             // Don't deduct from product stock here - only when order is finalized
             
@@ -111,7 +67,7 @@ const addProductToCartRefillAdmin = async(req, res) => {
 
 
 const updateProductVolumeRefillAdmin = async(req, res) => {
-    const {cartItemId, volume, sizeUnit} = req.body;
+    const {cartItemId, quantity, sizeUnit} = req.body;
 
     if(!cartItemId || !mongoose.Types.ObjectId.isValid(cartItemId)){
         return res.status(400).json({ 
@@ -119,7 +75,7 @@ const updateProductVolumeRefillAdmin = async(req, res) => {
         });
     }
 
-    if(!volume || volume < 1){
+    if(!quantity || quantity < 1){
         return res.status(400).json({ 
             success: false,
              message: 'Volume must be at least 1' 
@@ -144,33 +100,26 @@ const updateProductVolumeRefillAdmin = async(req, res) => {
             });
         }
 
-        //convert volume based on sizeUnit
-        let convertedVolume = volume;
-        let productSize = `${volume}${sizeUnit === 'Mililiter' ? 'ml' : sizeUnit === 'Gallon' ? 'gal' : 'L'}`;
+        // Use direct quantity without conversion
+        const productSize = `${quantity}${sizeUnit}`;
+        
+        const previousQuantity = cartItem.quantity || 0;
+        const quantityDifference = quantity - previousQuantity;
 
-        if(sizeUnit === 'Mililiter'){
-            convertedVolume = volume / 1000;
-        } else if(sizeUnit === 'Gallon'){
-            convertedVolume = volume * 3.785;
-        }
-
-        const previousVolume = cartItem.volume || 0;
-        const volumeDifference = convertedVolume - previousVolume;
-
-        //check if enough stock is available
-        if(volumeDifference > product.volume){
+        // Check if enough stock is available
+        if(quantityDifference > product.quantity){
             return res.status(400).json({ 
                 success: false, 
                 message: 'Not enough stock available' 
             });
         }
 
-        //update product stock
-        product.volume -= volumeDifference;
+        // Update product stock
+        product.quantity -= quantityDifference;
         await product.save();
 
-        //update cart item
-        cartItem.volume = convertedVolume;
+        // Update cart item
+        cartItem.quantity = quantity;
         cartItem.productSize = productSize;
         cartItem.sizeUnit = sizeUnit;
         cartItem.updatedAt = new Date();
@@ -295,7 +244,7 @@ const removeProductFromCartRefillAdmin = async(req, res) => {
 
             const product = await RefillProductModel.findById(cartItem.productId);
             if (product) {
-                product.volume += cartItem.volume; // Restore product volume
+                product.quantity += cartItem.quantity; 
                 await product.save();
             }
 

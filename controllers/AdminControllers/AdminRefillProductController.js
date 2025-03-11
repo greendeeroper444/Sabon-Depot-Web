@@ -1,12 +1,13 @@
 const AdminAuthModel = require("../../models/AdminModels/AdminAuthModel");
 const RefillProductModel = require("../../models/RefillProductModel");
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { getInventoryReport } = require("./AdminReportController");
 
 const addRefillProductAdmin = async(req, res) => {
     try {
-        const {productName, category, drum, color} = req.body;
+        const {productName, category, quantity, price, color} = req.body;
 
-        if(!productName || !category || !drum || !color){
+        if(!productName || !category || !quantity || !price || !color){
             return res.json({
                 error: 'Please provide all required fields'
             });
@@ -34,17 +35,30 @@ const addRefillProductAdmin = async(req, res) => {
                 });
             }
 
+            const productSize = `${quantity}L`;
+
             //create new product with the determined batch
             const newRefillProduct = await RefillProductModel.create({
                 productName,
                 category,
-                drum,
+                quantity,
+                price,
                 color,
+                productSize,
                 uploaderId: adminId,
                 uploaderType: 'Admin',
                 createdBy: adminExists.fullName,
             });
             
+            await getInventoryReport(
+                newRefillProduct._id,
+                newRefillProduct.productName,
+                newRefillProduct.sizeUnit,
+                newRefillProduct.productSize,
+                newRefillProduct.category,
+                newRefillProduct.quantity,
+                true
+            );
 
             return res.json({
                 message: 'Refill product added successfully!',
@@ -74,9 +88,9 @@ const getRefillProductAdmin = async(req, res) => {
 const editRefillProductAdmin = async(req, res) => {
     try {
         const {productId} = req.params;
-        const {productName, category, drum, volume, color} = req.body;
+        const {productName, category, quantity, price, color} = req.body;
 
-        if(!productName || !category || !drum || !volume || !color){
+        if(!productName || !category || !quantity || !price || !color){
             return res.json({
                 error: 'Please provide all required fields',
             });
@@ -104,9 +118,11 @@ const editRefillProductAdmin = async(req, res) => {
                 });
             }
 
+            const productSize = `${quantity}L`;
+
             const updatedProduct = await RefillProductModel.findByIdAndUpdate(
                 productId,
-                {productName, category, drum, volume, color},
+                {productName, category, quantity, price, color, productSize},
                 {new: true}
             );
 

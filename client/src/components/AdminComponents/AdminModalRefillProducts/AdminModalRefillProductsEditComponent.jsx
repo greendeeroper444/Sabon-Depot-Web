@@ -9,8 +9,8 @@ function AdminModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
     const [dataInput, setDataInput] = useState({
         productName: '', 
         category: '', 
-        drum: '', 
-        volume: '',
+        price: '', 
+        quantity: '',
         color: '#ff0000'
     })
     const [showPicker, setShowPicker] = useState(false);
@@ -21,8 +21,8 @@ function AdminModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
             setDataInput({
                 productName: selectedProduct.productName || '',
                 category: selectedProduct.category || '',
-                drum: selectedProduct.drum || '',
-                volume: selectedProduct.volume || '',
+                price: selectedProduct.price || '',
+                quantity: selectedProduct.quantity || '',
                 color: selectedProduct.color || '#ff0000'
             });
         }
@@ -69,27 +69,27 @@ function AdminModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
     const handleEditProductAdmin = async(e) => {
         e.preventDefault();
 
-        const {productName, category, drum, volume, color} = dataInput;
+        const {productName, category, price, quantity, color} = dataInput;
 
-        const updatedVolume = parseInt(dataInput.volume) + parseInt(inputValue);
+        const updatedVolume = parseInt(dataInput.quantity) + parseInt(inputValue);
     
-        if(!productName || !category || !drum || !volume){
+        if(!productName || !category || !price || !quantity){
             toast.error('Please input all fields');
             return;
         }
 
-        if (updatedVolume > 105) {
-            toast.error('volume cannot exceed 105.');
-            return;
-        }
+        // if (updatedVolume > 105) {
+        //     toast.error('volume cannot exceed 105.');
+        //     return;
+        // }
     
     
         try {
             const response = await axios.put(`/adminRefillProduct/editRefillProductAdmin/${selectedProduct._id}`, {
                 productName,
                 category,
-                drum,
-                volume: updatedVolume,
+                price,
+                quantity: updatedVolume,
                 color
             }, {
                 headers: {'Content-Type': 'application/json'}
@@ -154,12 +154,32 @@ function AdminModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
                         </div>
                         <div className='label-text'>
                             <div>
-                                <label>Drum Quantity:</label>
+                                <label>Price:</label>
                                 <input type="number"
-                                value={dataInput.drum} 
-                                onChange={(e) => setDataInput({...dataInput, drum: e.target.value})} 
+                                value={dataInput.price} 
+                                onChange={(e) => setDataInput({...dataInput, price: e.target.value})} 
                                 />
                             </div>
+                        </div>
+                        <div className='label-text'>
+                            <div>
+                                <label>UPDATE VOLUME:</label>
+                                <input
+                                type="number"
+                                value={inputValue}
+                                onChange={(e) => {
+                                    const newValue = e.target.value;
+                                    if(newValue === ''){
+                                        setInputValue('');
+                                    } else{
+                                        setInputValue(newValue);
+                                    }
+                                }}
+                                />
+                            </div>
+                            <span>
+                                = {dataInput.quantity + (inputValue ? Number(inputValue) : 0)}
+                            </span>
                         </div>
                         
                         <div style={{ position: 'relative' }}>

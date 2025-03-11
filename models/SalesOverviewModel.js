@@ -6,7 +6,6 @@ const TotalSaleSchema = new mongoose.Schema({
     },
     productName: {
         type: String,
-        required: true,
     },
     price: {
         type: Number,
@@ -25,7 +24,6 @@ const TotalSaleSchema = new mongoose.Schema({
     },
     day: {
         type: Date,
-        required: true,
         // remove unique here if you want to allow multiple records for the same day and product
     },
 }, {timestamps: true});
@@ -43,7 +41,6 @@ const BestSellingSchema = new mongoose.Schema({
     },
     productName: {
         type: String,
-        required: true,
     },
     price: {
         type: Number,
