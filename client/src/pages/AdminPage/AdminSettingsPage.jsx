@@ -11,12 +11,12 @@ function AdminSettingsPage() {
     const [activeTab, setActiveTab] = useState('General');
 
     const tabs = [
-        { id: 'General', icon: '⚙️', hasNotifications: false },
-        { id: 'Notifications', icon: '🔔', hasNotifications: true, count: 3 },
-        { id: 'Promotions', icon: '🏷️', hasNotifications: false },
-        { id: 'Inventory', icon: '📦', hasNotifications: false },
-        { id: 'User Roles', icon: '👥', hasNotifications: false },
-        { id: 'Ordering', icon: '🛒', hasNotifications: false }
+        {id: 'General', icon: '⚙️', hasNotifications: false},
+        {id: 'Notifications', icon: '🔔', hasNotifications: true, count: 3},
+        {id: 'Promotions', icon: '🏷️', hasNotifications: false},
+        {id: 'Inventory', icon: '📦', hasNotifications: false},
+        {id: 'User Roles', icon: '👥', hasNotifications: false},
+        {id: 'Ordering', icon: '🛒', hasNotifications: false}
     ];
 
     const renderActiveTab = () => {

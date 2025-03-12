@@ -231,8 +231,13 @@ const editProductStaff = async(req, res) => {
                 });
             }
 
+            //fix 2: Compare the dates in a consistent format
+            //format both dates to YYYY-MM-DD for comparison
+            const formattedNewDate = new Date(expirationDate).toISOString().split('T')[0];
+            const formattedOriginalDate = new Date(product.expirationDate).toISOString().split('T')[0];
+            
             //check if expiration date has changed
-            if(expirationDate !== product.expirationDate) {
+            if(formattedNewDate !== formattedOriginalDate) {
                 //create a new product instead of updating the existing one
                 
                 //check for an existing product with the same expirationDate
@@ -307,7 +312,7 @@ const editProductStaff = async(req, res) => {
                 return res.json({
                     message: 'New product created with updated expiration date!',
                     originalProduct: product,
-                    newProduct
+                    newProduct: true
                 });
             } else {
                 //if expiration date didn't change, update the existing product as before
@@ -349,7 +354,8 @@ const editProductStaff = async(req, res) => {
 
                 return res.json({
                     message: 'Product updated successfully!',
-                    updatedProduct
+                    updatedProduct,
+                    newProduct: false
                 });
             }
         } catch (error) {

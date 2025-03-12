@@ -3,14 +3,16 @@ import '../../CSS/AdminCSS/AdminSettings.css';
 import StaffGeneralComponent from '../../components/StaffComponents/StaffSettings/StaffGeneralComponent';
 import StaffNotificationsComponent from '../../components/StaffComponents/StaffSettings/StaffNotificationsComponent';
 import StaffOrderingComponent from '../../components/StaffComponents/StaffSettings/StaffOrderingComponent';
+import StaffInventoryComponent from '../../components/StaffComponents/StaffSettings/StaffInventoryComponent';
 
 function StaffSettingsPage() {
     const [activeTab, setActiveTab] = useState('General');
 
     const tabs = [
-        { id: 'General', icon: '⚙️', hasNotifications: false },
-        { id: 'Notifications', icon: '🔔', hasNotifications: true, count: 3 },
-        { id: 'Ordering', icon: '🛒', hasNotifications: false }
+        {id: 'General', icon: '⚙️', hasNotifications: false},
+        {id: 'Notifications', icon: '🔔', hasNotifications: true, count: 3},
+        {id: 'Inventory', icon: '📦', hasNotifications: false},
+        {id: 'Ordering', icon: '🛒', hasNotifications: false}
     ];
 
     const renderActiveTab = () => {
@@ -19,6 +21,8 @@ function StaffSettingsPage() {
                 return <StaffGeneralComponent />;
             case 'Notifications':
                 return <StaffNotificationsComponent />;
+            case 'Inventory':
+                return <StaffInventoryComponent />;
             case 'Ordering':
                 return <StaffOrderingComponent />;
             default:
