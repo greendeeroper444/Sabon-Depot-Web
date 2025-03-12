@@ -103,8 +103,8 @@ function AdminUserRolesComponent() {
 
   return (
     <div className='admin-user-roles-container'>
-        <div className='header'>
-            <h1>User Roles</h1>
+        <h2 className='admin-section-title'>User Roles Settings</h2>
+        <div className='admin-panel'>
             <div className='user-type-select'>
                 <label>
                     <select value={userType} onChange={(e) => setUserType(e.target.value)}>
@@ -137,7 +137,7 @@ function AdminUserRolesComponent() {
                         <td>{userType === 'Customer' ? `${account.firstName} ${account.middleInitial} ${account.lastName}` : account.fullName}</td>
                         <td>{account.emailAddress}</td>
                             {userType === 'Customer' && <td>{account.clientType}</td>}
-                        <td>
+                        <td className='action-cell'>
                         <button onClick={() => openModal(account)} className='edit-btn'>
                             Edit
                         </button>

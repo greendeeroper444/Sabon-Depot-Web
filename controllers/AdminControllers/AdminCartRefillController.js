@@ -49,7 +49,6 @@ const addProductToCartRefillAdmin = async(req, res) => {
                 productSize
             }).save();
 
-            // Don't deduct from product stock here - only when order is finalized
             
             const updatedCart = await StaffCartRefillModel.find({adminId}).populate('productId');
             res.json(updatedCart);
@@ -100,13 +99,11 @@ const updateProductVolumeRefillAdmin = async(req, res) => {
             });
         }
 
-        // Use direct quantity without conversion
         const productSize = `${quantity}${sizeUnit}`;
         
         const previousQuantity = cartItem.quantity || 0;
         const quantityDifference = quantity - previousQuantity;
 
-        // Check if enough stock is available
         if(quantityDifference > product.quantity){
             return res.status(400).json({ 
                 success: false, 
@@ -114,11 +111,9 @@ const updateProductVolumeRefillAdmin = async(req, res) => {
             });
         }
 
-        // Update product stock
         product.quantity -= quantityDifference;
         await product.save();
 
-        // Update cart item
         cartItem.quantity = quantity;
         cartItem.productSize = productSize;
         cartItem.sizeUnit = sizeUnit;

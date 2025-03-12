@@ -1,23 +1,30 @@
 .admin-user-roles-container{
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+  
+.admin-user-roles-container .admin-section-title{
+    margin-bottom: 24px;
+    font-size: 28px;
+    font-weight: 500;
+    color: #2c3e50;
+    border-bottom: 2px solid #077A37;
+    padding-bottom: 12px;
+}
+  
+.admin-user-roles-container .admin-panel{
+    background-color: #ffffff;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-  
-.admin-user-roles-container .header{
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    margin-bottom: 32px;
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
     align-items: center;
-    margin-bottom: 20px;
+    justify-content: space-between;
 }
-  
-.admin-user-roles-container .header h1{
-    font-size: 1.5rem;
-    color: #333;
-}
-  
 .admin-user-roles-container .add-user-btn{
     padding: 8px 16px;
     background-color: #077A37;
@@ -144,7 +151,10 @@
     background-color: #c82333;
 }
 
-
+.admin-user-roles-container .action-cell {
+    display: flex;
+    gap: 8px;
+}
   
 .admin-user-roles-container .add-category-btn,
 .admin-user-roles-container .add-size-btn,
@@ -164,14 +174,22 @@
     margin-top: 10px;
 }
   
+
 .admin-user-roles-container .edit-btn{
-    background-color: #2196F3;
-    color: #fff;
-    margin-right: 5px;
+    background-color: #ffd700;
+    color: white;
+}
+  
+.admin-user-roles-container .edit-btn:hover{
+    background-color: #ffd700;
 }
   
 .admin-user-roles-container .delete-btn{
-    background-color: #f44336;
-    color: #fff;
+    background-color: #dc3545;
+    color: white;
+}
+  
+.admin-user-roles-container .delete-btn:hover{
+    background-color: #d1221f;
 }
   

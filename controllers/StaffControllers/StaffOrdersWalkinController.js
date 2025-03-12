@@ -202,7 +202,7 @@ const addOrderWalkinStaff = async(req, res) => {
                     item.productId.category,
                     item.productId.price,
                     item.quantity,
-                    true
+                    'product'
                 );
 
             }));

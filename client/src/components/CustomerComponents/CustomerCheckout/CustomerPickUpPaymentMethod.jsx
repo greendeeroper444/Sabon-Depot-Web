@@ -6,7 +6,6 @@ import '../../../CSS/CustomerCSS/CustomerCheckout/CustomerPickUpPaymentMethod.cs
 import { toast } from 'react-hot-toast';
 import moment from 'moment-timezone';
 
-
 const CustomerPickUpPaymentMethod = ({
     onClose,
     handlePickupPayment,
@@ -21,6 +20,7 @@ const CustomerPickUpPaymentMethod = ({
         selectedDate ? new Date(selectedDate) : null
     );
     const [localSelectedTime, setLocalSelectedTime] = useState(selectedTime || '');
+    const [hasAvailableTimesToday, setHasAvailableTimesToday] = useState(false);
 
     //fetch unavailable dates from the backend
     useEffect(() => {
@@ -37,25 +37,128 @@ const CustomerPickUpPaymentMethod = ({
         fetchUnavailableData();
     }, []);
 
-    // Fetch available times from the backend
+    //fetch available times from the backend
     useEffect(() => {
         const fetchAvailableTimes = async() => {
             try {
                 const response = await axios.get('/customerDatePicker/getTimeAvailable');
-                setAvailableTimes(response.data || []);
+                const times = response.data || [];
+                setAvailableTimes(times);
+                
+                //check if any times are available for today
+                checkAvailableTimesToday(times);
             } catch (error) {
                 console.error('Error fetching available times:', error);
                 setAvailableTimes([]);
+                setHasAvailableTimesToday(false);
             }
         };
 
         fetchAvailableTimes();
     }, []);
 
-    //determine if a date should be disabled
+    //check if any times are available for today
+    const checkAvailableTimesToday = (times) => {
+        const currentTime = moment().tz('Asia/Singapore').format('HH:mm');
+        
+        const availableTimesToday = times.filter(entry => {
+            //extract time from formattedTime or use the time object if available
+            const timeToCheck = entry.formattedTime || 
+                (entry.time && `${entry.time.startTime}-${entry.time.endTime}`);
+            
+            if(!timeToCheck) return false;
+            
+            //extract the start time from the format
+            const startTime = timeToCheck.includes('-') 
+                ? timeToCheck.split('-')[0].trim() 
+                : timeToCheck.trim();
+            
+            //compare with current time - must be at least 15 minutes in the future
+            const currentTimeMoment = moment(currentTime, 'HH:mm');
+            const startTimeMoment = moment(startTime, 'HH:mm');
+            
+            //add 15 minutes buffer to current time
+            const bufferTime = moment(currentTimeMoment).add(15, 'minutes');
+            
+            return startTimeMoment.isAfter(bufferTime);
+        });
+        
+        setHasAvailableTimesToday(availableTimesToday.length > 0);
+    };
+
+    //determine if a date should be disabled (past dates or unavailable dates)
     const isDateDisabled = (date) => {
+        //convert to local timezone for comparison
         const dateString = moment(date).tz('Asia/Singapore').format('YYYY-MM-DD');
+        const currentDate = moment().tz('Asia/Singapore').format('YYYY-MM-DD');
+        
+        //check if the date is today
+        const isToday = dateString === currentDate;
+        
+        //disable past dates
+        if(dateString < currentDate){
+            return true;
+        }
+        
+        //disable today if no available times remain
+        if (isToday && !hasAvailableTimesToday) {
+            return true;
+        }
+        
+        //disable dates marked as unavailable
         return unavailableDates.includes(dateString);
+    };
+
+    //force disable today's date in the DatePicker component
+    const filterDate = (date) => {
+        const dateString = moment(date).tz('Asia/Singapore').format('YYYY-MM-DD');
+        const currentDate = moment().tz('Asia/Singapore').format('YYYY-MM-DD');
+        console.log('Right now date:', currentDate);
+        
+        //always disable today
+        if(dateString === currentDate){
+            return false;
+        }   
+        
+        //use the regular isDateDisabled function for other dates
+        return !isDateDisabled(date);
+    };
+
+    //filter available times based on the current time for today's date
+    const getFilteredTimes = () => {
+        if(!localSelectedDate) return [];
+
+        const currentDate = moment().tz('Asia/Singapore').format('YYYY-MM-DD');
+        const selectedDateFormatted = moment(localSelectedDate).tz('Asia/Singapore').format('YYYY-MM-DD');
+        const currentTime = moment().tz('Asia/Singapore').format('HH:mm');
+
+        //if selected date is today, filter out past times
+        if(selectedDateFormatted === currentDate){
+            return availableTimes.filter(entry => {
+                //extract time from formattedTime or use the time object if available
+                const timeToCheck = entry.formattedTime || 
+                    (entry.time && `${entry.time.startTime}-${entry.time.endTime}`);
+                
+                if(!timeToCheck) return false;
+                
+                //extract the start time from the format
+                const startTime = timeToCheck.includes('-') 
+                    ? timeToCheck.split('-')[0].trim() 
+                    : timeToCheck.trim();
+                
+                //compare with current time - must be at least 15 minutes in the future
+                const currentTimeMoment = moment(currentTime, 'HH:mm');
+                const startTimeMoment = moment(startTime, 'HH:mm');
+                
+                //add 15 minutes buffer to current time
+                const bufferTime = moment(currentTimeMoment).add(15, 'minutes');
+                
+                return startTimeMoment.isAfter(bufferTime);
+            });
+        }
+
+        //for future dates, return all available times
+        return availableTimes;
     };
 
     //handle date change
@@ -98,6 +201,16 @@ const CustomerPickUpPaymentMethod = ({
         onClose?.();
     };
 
+    //get filtered times based on current date/time
+    const filteredTimes = getFilteredTimes();
+
+    //calculate the minimum date to allow - force tomorrow
+    const getMinDate = () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow;
+    };
+
   return (
     <div className='customer-pickup-payment-container'>
         <div className='customer-pickup-payment-content'>
@@ -105,29 +218,34 @@ const CustomerPickUpPaymentMethod = ({
 
             {/* date picker */}
             <DatePicker
-            selected={localSelectedDate}
-            onChange={handleDateChange}
-            filterDate={(date) => !isDateDisabled(date)}
-            dateFormat="yyyy-MM-dd"
-            placeholderText="Select a date"
-            className='date-picker'
+                selected={localSelectedDate}
+                onChange={handleDateChange}
+                filterDate={filterDate}
+                dateFormat="yyyy-MM-dd"
+                placeholderText="Select a date"
+                className='date-picker'
+                minDate={getMinDate()}
             />
 
             {/*time dropdown */}
             <select
-            value={localSelectedTime}
-            onChange={handleTimeChange}
-            disabled={!localSelectedDate}
+                value={localSelectedTime}
+                onChange={handleTimeChange}
+                disabled={!localSelectedDate}
             >
                 <option value="" disabled>
                     Select a time
                 </option>
                 {
-                    availableTimes.map((entry) => (
-                        <option key={entry._id} value={entry.formattedTime}>
-                            {entry.formattedTime}
-                        </option>
-                    ))
+                    filteredTimes.map((entry) => {
+                        const timeValue = entry.formattedTime || 
+                            (entry.time && `${entry.time.startTime}-${entry.time.endTime}`);
+                        return (
+                            <option key={entry._id} value={timeValue}>
+                                {timeValue}
+                            </option>
+                        );
+                    })
                 }
             </select>
 
@@ -169,4 +287,3 @@ const CustomerPickUpPaymentMethod = ({
 }
 
 export default CustomerPickUpPaymentMethod
-

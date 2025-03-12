@@ -54,8 +54,6 @@ function CustomerNavbarComponent({customerToggleSidebar}) {
         }
     };
 
-    fetchCartItems();
-
     useEffect(() => {
         const fetchNotifications = async() => {
             try {

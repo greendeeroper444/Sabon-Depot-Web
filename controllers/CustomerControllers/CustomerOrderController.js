@@ -286,7 +286,7 @@ const createOrderCustomer = async(req, res) => {
                 item.productId.category,
                 item.productId.price,
                 item.quantity,
-                true
+                'product'
             );
         }));
 
@@ -331,7 +331,6 @@ const directCheckoutCustomer = async(req, res) => {
             pickupTime,
         } = req.body;
 
-        console.log('Request Body:', req.body);
 
         if(!productDetails || !productDetails._id){
             return res.status(400).json({ 
@@ -495,7 +494,7 @@ const directCheckoutCustomer = async(req, res) => {
                         product.category,
                         price,
                         quantity,
-                        true
+                        'product'
                     );
         
                 } catch (err) {

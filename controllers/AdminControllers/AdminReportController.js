@@ -64,26 +64,36 @@ const getSalesReport = async(
     category,
     price,
     unitsSold,
-    isRefill = false
+    productType
 ) => {
     try {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
 
-        //find the product to retrieve inventory details
+
         let product;
+        let isRefill = false;
         
-        if(isRefill) {
+   
+        if(productType === 'refill'){
             product = await RefillProductModel.findById(productId);
-        } else {
+            isRefill = true;
+        } else if(productType === 'product'){
             product = await ProductModel.findById(productId);
+            isRefill = false;
+        } else{
+            product = await ProductModel.findById(productId);
+            
+            if(!product){
+                product = await RefillProductModel.findById(productId);
+                isRefill = true;
+            }
         }
         
         if(!product){
-            throw new Error("Product not found");
+            throw new Error(`Product not found with ID: ${productId}`);
         }
 
-        //get or create a sales report entry for today
         let salesReport = await SalesReportModel.findOne({
             productId,
             reportDate: today,
@@ -91,12 +101,10 @@ const getSalesReport = async(
         });
 
         if(salesReport){
-            //update the existing sales report for today
             salesReport.unitsSold += unitsSold;
             salesReport.totalRevenue += product.price * unitsSold;
             salesReport.inventoryLevel = product.quantity;
-        } else{
-            //create a new sales report entry for today
+        } else {
             salesReport = new SalesReportModel({
                 productId,
                 productName,
@@ -113,12 +121,11 @@ const getSalesReport = async(
             });
         }
 
-        //save the report
         await salesReport.save();
 
         return true;
     } catch (error) {
-        console.error(error);
+        console.error(`Sales Report Error: ${error.message}`);
         return false;
     }
 };

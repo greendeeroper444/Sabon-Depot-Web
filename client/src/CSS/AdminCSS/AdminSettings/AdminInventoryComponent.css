@@ -1,98 +1,196 @@
+
 .admin-inventory-container{
-    padding: 20px;
-    background-color: #f9f9f9;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
 }
   
-  .admin-inventory-container  h2{
-    margin-bottom: 15px;
-    color: #333;
+.admin-inventory-container .admin-section-title{
+    margin-bottom: 24px;
+    font-size: 28px;
+    font-weight: 500;
+    color: #2c3e50;
+    border-bottom: 2px solid #077A37;
+    padding-bottom: 12px;
 }
   
-.admin-inventory-container .inventory-table{
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
+.admin-inventory-container .inventory-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
 }
   
-.admin-inventory-container .inventory-table th,
-.admin-inventory-container .inventory-table td{
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
+  @media (max-width: 1024px){
+  .admin-inventory-container .inventory-grid{
+      grid-template-columns: 1fr;
+}
 }
   
-.admin-inventory-container .inventory-table th{
-    background-color: #077A37;
-    color: #fff;
+  /* Panel styles */
+.admin-inventory-container .panel{
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
 }
   
-.admin-inventory-container .inventory-table tr:nth-child(even){
-    background-color: #f2f2f2;
-}
-  
-.admin-inventory-container .inventory-table tr:hover{
-    background-color: #ddd;
-}
-.admin-inventory-container .product-size-buttons{
+.admin-inventory-container .panel-header{
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 1.2rem;
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #e0e0e0;
 }
   
-.admin-inventory-container .filter-buttons{
-    margin-bottom: 15px;
+.admin-inventory-container .panel-header h2{
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
 }
   
-.admin-inventory-container .filter-btn{
-    padding: 8px 15px;
-    margin-right: 10px;
-    background-color: #f1f1f1;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    cursor: pointer;
+  /* Table styles */
+.admin-inventory-container .table-container{
+    padding: 1rem;
+    overflow-x: auto;
 }
   
-.admin-inventory-container .filter-btn.active{
+.admin-inventory-container .data-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+  
+.admin-inventory-container .data-table th,
+.admin-inventory-container .data-table td{
+    padding: 0.85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eaeaea;
+}
+  
+.admin-inventory-container .data-table th{
     background-color: #077A37;
     color: #fff;
-    border-color: #077A37;
+    font-weight: 500;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
   
-.admin-inventory-container .filter-btn:hover{
-    background-color: #ddd;
+.admin-inventory-container .data-table tr:hover{
+    background-color: #f9f9f9;
 }
   
-.admin-inventory-container .add-category-btn,
-.admin-inventory-container .add-size-btn,
+.admin-inventory-container .data-table thead tr{
+    height: 50px;
+}
+  
+.admin-inventory-container .empty-table{
+    text-align: center;
+    padding: 2rem !important;
+    color: #888;
+    font-style: italic;
+}
+  
+  /* Button styles */
+.admin-inventory-container .add-btn{
+    background-color: #077A37;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+  
+.admin-inventory-container .add-btn:hover{
+    background-color: #056025;
+}
+  
+.admin-inventory-container .btn-icon{
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+  
+.admin-inventory-container .action-buttons{
+    display: flex;
+    gap: 0.5rem;
+}
+  
 .admin-inventory-container .edit-btn,
 .admin-inventory-container .delete-btn{
-    padding: 8px 15px;
     border: none;
-    border-radius: 5px;
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
     cursor: pointer;
-    margin-bottom: 15px;
-}
-  
-.admin-inventory-container .add-category-btn,
-.admin-inventory-container .add-size-btn{
-    background-color: #077A37;
-    color: #fff;
-    margin-top: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
   
 .admin-inventory-container .edit-btn{
     background-color: #2196F3;
-    color: #fff;
-    margin-right: 5px;
+    color: white;
+}
+  
+.admin-inventory-container .edit-btn:hover{
+    background-color: #0d8aee;
 }
   
 .admin-inventory-container .delete-btn{
     background-color: #f44336;
-    color: #fff;
+    color: white;
 }
   
-
-
+.admin-inventory-container .delete-btn:hover{
+    background-color: #e53935;
+}
+  
+  /* Filter styles */
+.admin-inventory-container .filter-container{
+    padding: 1rem 1rem 0.5rem;
+    border-bottom: 1px solid #eaeaea;
+}
+  
+.admin-inventory-container .filter-label{
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+  
+.admin-inventory-container .filter-buttons{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+  
+.admin-inventory-container .filter-btn{
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+  
+.admin-inventory-container .filter-btn:hover{
+    background-color: #e0e0e0;
+}
+  
+.admin-inventory-container .filter-btn.active{
+    background-color: #077A37;
+    color: white;
+    border-color: #077A37;
+}
+  
+  /* Modal styles */
 .admin-inventory-container .modal-overlay{
     position: fixed;
     top: 0;
@@ -104,79 +202,150 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    animation: fadeIn 0.2s ease;
 }
-
+  
+  @keyframes fadeIn{
+    from{ opacity: 0; }
+    to{ opacity: 1; }
+}
+  
 .admin-inventory-container .modal-content{
     background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
+    border-radius: 8px;
     width: 400px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease;
 }
-
-.admin-inventory-container .modal-content h2{
-    text-align: center;
-    margin-bottom: 15px;
+  
+  @keyframes slideIn{
+    from{ transform: translateY(-20px); opacity: 0; }
+    to{ transform: translateY(0); opacity: 1; }
 }
-
-.admin-inventory-container .modal-body{
-    margin-bottom: 15px;
-}
-
-.admin-inventory-container .date-input,
-.admin-inventory-container .category-input{
-    width: 100%;
-    padding: 8px;
-    margin: 5px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-
-.admin-inventory-container .add-time-button{
-    margin-top: 10px;
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.admin-inventory-container .add-time-button:hover{
-    background-color: #0056b3;
-}
-
-.admin-inventory-container .modal-footer{
+  
+.admin-inventory-container .modal-header{
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eaeaea;
 }
-
+  
+.admin-inventory-container .modal-header h2{
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
+}
+  
+.admin-inventory-container .modal-close{
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #888;
+    padding: 0;
+    line-height: 1;
+}
+  
+.admin-inventory-container .modal-close:hover{
+    color: #333;
+}
+  
+.admin-inventory-container .modal-body{
+    padding: 1.5rem;
+}
+  
+.admin-inventory-container .modal-footer{
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eaeaea;
+}
+  
+  /* Form styles */
+.admin-inventory-container .form-group{
+    margin-bottom: 1.25rem;
+}
+  
+.admin-inventory-container .form-group label{
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #555;
+}
+  
+.admin-inventory-container .form-input, 
+.admin-inventory-container .form-select{
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+  
+.admin-inventory-container .form-input:focus, 
+.admin-inventory-container .form-select:focus{
+    border-color: #077A37;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(7, 122, 55, 0.1);
+}
+  
+.admin-inventory-container .form-select{
+    background-color: #fff;
+    cursor: pointer;
+}
+  
+.admin-inventory-container .input-with-suffix{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+  
+.admin-inventory-container .input-with-suffix .form-input{
+    padding-right: 2.5rem;
+}
+  
+.admin-inventory-container .input-suffix{
+    position: absolute;
+    right: 0.75rem;
+    color: #888;
+    pointer-events: none;
+}
+  
+.admin-inventory-container .submit-button,
+.admin-inventory-container .cancel-button{
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+  
 .admin-inventory-container .submit-button{
-    padding: 10px 20px;
     background-color: #077A37;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    color: white;
 }
-
-.admin-inventory-container .submit-button:hover{
-    background-color: #218838;
+  
+.admin-inventory-container .submit-button:hover:not(:disabled){
+    background-color: #056025;
 }
-
-.admin-inventory-container .close-button{
-    padding: 10px 20px;
-    background-color: #dc3545;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  
+.admin-inventory-container .submit-button:disabled{
+    background-color: #b0b0b0;
+    cursor: not-allowed;
 }
-
-.admin-inventory-container .close-button:hover{
-    background-color: #c82333;
+  
+.admin-inventory-container .cancel-button{
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+}
+  
+.admin-inventory-container .cancel-button:hover{
+    background-color: #e5e5e5;
 }

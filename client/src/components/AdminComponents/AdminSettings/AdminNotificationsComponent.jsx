@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+
 function AdminNotificationsComponent() {
     const [orderNotifications, setOrderNotifications] = useState([]);
     const [expirationNotifications, setExpirationNotifications] = useState([]);
@@ -12,9 +13,11 @@ function AdminNotificationsComponent() {
     const [prevCount, setPrevCount] = useState(1);
     const [expiryNotifId, setExpiryNotifId] = useState(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [activeTab, setActiveTab] = useState('orders');
 
     useEffect(() => {
         fetchExpiryNotifPeriod();
+        fetchAllNotifications();
     }, []);
 
     const fetchExpiryNotifPeriod = async() => {
@@ -26,7 +29,7 @@ function AdminNotificationsComponent() {
                 setExpiryNotifId(response.data.data._id);
             }
         } catch (error) {
-            console.error( error);
+            console.error(error);
         }
     };
 
@@ -50,17 +53,17 @@ function AdminNotificationsComponent() {
                 expiryNotifPeriod: count 
             });
             setShowConfirmation(false);
-
             toast.success('Extension period updated successfully');
         } catch (error) {
             console.error(error);
+            toast.error('Failed to update extension period');
         }
     };
 
     const handleCancel = () => {
         setCount(prevCount);
         setShowConfirmation(false);
-        toast.error('Extension period updated cancelled');
+        toast.error('Extension period update cancelled');
     };
 
     //fetch order-related notifications
@@ -97,108 +100,156 @@ function AdminNotificationsComponent() {
         }
     };
 
-    useEffect(() => {
-        const fetchAllNotifications = async() => {
-            await fetchOrderNotifications();
-            await fetchAdminNotifications();
-            await fetchLowStockNotifications();
-        };
+    const fetchAllNotifications = async() => {
+        await fetchOrderNotifications();
+        await fetchAdminNotifications();
+        await fetchLowStockNotifications();
+    };
 
-        fetchAllNotifications();
-    }, []);
+    const getTotalNotifications = () => {
+        return orderNotifications.length + expirationNotifications.length + lowStockNotifications.length;
+    };
 
-  return (
-    <div className='admin-notifications-order'>
-        {/* <h2>Notifications</h2> */}
-        <div className='notification-list-order'>
-            {/* order notifications */}
-            <div className='notification-category-order'>
-                <h3>Order Notifications</h3>
-                {
-                    orderNotifications.length > 0 ? (
-                        orderNotifications.map((notification, index) => {
-                            const paymentMethod = notification.orderId?.paymentMethod; 
-                            const orderLink =
-                                paymentMethod === 'Pick Up'
-                                    ? `/admin/orders-pickup/details/${notification.orderId._id}`
-                                    : `/admin/orders/details/${notification.orderId._id}`;
-
-                            return (
-                                <div key={index} className='notification-item-order'>
-                                    <Link to={orderLink}>
-                                        {notification.message || notification}
-                                    </Link>
-                                </div>
-                            );
-                        })
-                    ) : (
-                        <div className='notification-item-order'>No order notifications</div>
-                    )
-                }
-            </div>
-
-            {/* expiration notifications */}
-            <div className='notification-category-order'>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                    <h3>Expiration Notifications</h3>
+    return (
+        <div className="admin-notifications">
+            <div className="notifications-header">
+                <h2>Notifications <span className="notification-badge">{getTotalNotifications()}</span></h2>
+                <div className="notification-tabs">
+                    <button 
+                        className={`tab-button ${activeTab === 'orders' ? 'active' : ''}`} 
+                        onClick={() => setActiveTab('orders')}
+                    >
+                        Orders <span className="tab-badge">{orderNotifications.length}</span>
+                    </button>
+                    <button 
+                        className={`tab-button ${activeTab === 'expiration' ? 'active' : ''}`} 
+                        onClick={() => setActiveTab('expiration')}
+                    >
+                        Expiration <span className="tab-badge">{expirationNotifications.length}</span>
+                    </button>
+                    <button 
+                        className={`tab-button ${activeTab === 'stock' ? 'active' : ''}`} 
+                        onClick={() => setActiveTab('stock')}
+                    >
+                        Low Stock <span className="tab-badge">{lowStockNotifications.length}</span>
+                    </button>
                 </div>
-                <div className='extention-period' style={{ marginTop: '30px' }}>
-                    <div>
-                        <h3>Expiry Notification</h3>
-                    </div>
-                    <div className='counter'>
-                        <button className='btn minus' onClick={handleDecrease}>-</button>
-                        <span className='count'>{count}</span>
-                        <button className='btn plus' onClick={handleIncrease}>+</button>
-                        {
-                            showConfirmation && (
-                                <div className='confirmation'>
-                                    <span className='confirm-check' onClick={handleConfirm}>✔️</span>
-                                    <span className='cancel-times' onClick={handleCancel}>❌</span>
-                                </div>
-                            
-                            )
-                        }
-                    </div>
-                </div>
-                
             </div>
-                {
-                    expirationNotifications.length > 0 ? (
-                        expirationNotifications.map((notification, index) => (
-                            <div key={index} className='notification-item-order'>
-                                <Link to='/admin/inventory/finished-product'>
-                                    {notification.message || notification}
-                                </Link>
-                            </div>
-                        ))
-                    ) : (
-                        <div className='notification-item-order'>No expiration notifications</div>
-                    )
-                }
-            </div>
+            
+            <div className="notification-content">
+                {/* Order Notifications */}
+                {activeTab === 'orders' && (
+                    <div className="notification-category">
+                        <h3>Order Notifications</h3>
+                        <div className="notification-list">
+                            {orderNotifications.length > 0 ? (
+                                orderNotifications.map((notification, index) => {
+                                    const paymentMethod = notification.orderId?.paymentMethod; 
+                                    const orderLink =
+                                        paymentMethod === 'Pick Up'
+                                            ? `/admin/orders-pickup/details/${notification.orderId._id}`
+                                            : `/admin/orders/details/${notification.orderId._id}`;
 
-            {/* low stock notifications */}
-            <div className='notification-category-order'>
-                <h3>Low Stock Notifications</h3>
-                {
-                    lowStockNotifications.length > 0 ? (
-                        lowStockNotifications.map((notification, index) => (
-                            <div key={index} className='notification-item-order'>
-                                <Link to='/admin/inventory/finished-product'>
-                                    {notification.message}
-                                </Link>
+                                    return (
+                                        <div key={index} className="notification-item">
+                                            <Link to={orderLink}>
+                                                <div className="notification-icon">📦</div>
+                                                <div className="notification-text">
+                                                    {notification.message || notification}
+                                                </div>
+                                            </Link>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="empty-state">
+                                    <div className="empty-icon">🔔</div>
+                                    <p>No order notifications available</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Expiration Notifications */}
+                {activeTab === 'expiration' && (
+                    <div className="notification-category">
+                        <div className="category-header">
+                            <h3>Expiration Notifications</h3>
+                            <div className="expiry-settings">
+                                <div className="period-label">
+                                    <span>Notify</span>
+                                    <div className="counter">
+                                        <button className="counter-btn minus" onClick={handleDecrease} disabled={count <= 1}>−</button>
+                                        <span className="counter-value">{count}</span>
+                                        <button className="counter-btn plus" onClick={handleIncrease}>+</button>
+                                    </div>
+                                    <span>days before expiry</span>
+                                </div>
+                                
+                                {showConfirmation && (
+                                    <div className="confirmation-controls">
+                                        <button className="confirm-btn" onClick={handleConfirm}>
+                                            <span className="icon">✓</span> Save
+                                        </button>
+                                        <button className="cancel-btn" onClick={handleCancel}>
+                                            <span className="icon">✕</span> Cancel
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                        ))
-                    ) : (
-                        <div className='notification-item-order'>No low stock notifications</div>
-                    )
-                }
+                        </div>
+                        
+                        <div className="notification-list">
+                            {expirationNotifications.length > 0 ? (
+                                expirationNotifications.map((notification, index) => (
+                                    <div key={index} className="notification-item">
+                                        <Link to="/admin/inventory/finished-product">
+                                            <div className="notification-icon">⏱️</div>
+                                            <div className="notification-text">
+                                                {notification.message || notification}
+                                            </div>
+                                        </Link>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="empty-state">
+                                    <div className="empty-icon">⏱️</div>
+                                    <p>No expiration notifications available</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Low Stock Notifications */}
+                {activeTab === 'stock' && (
+                    <div className="notification-category">
+                        <h3>Low Stock Notifications</h3>
+                        <div className="notification-list">
+                            {lowStockNotifications.length > 0 ? (
+                                lowStockNotifications.map((notification, index) => (
+                                    <div key={index} className="notification-item">
+                                        <Link to="/admin/inventory/finished-product">
+                                            <div className="notification-icon">📉</div>
+                                            <div className="notification-text">
+                                                {notification.message}
+                                            </div>
+                                        </Link>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="empty-state">
+                                    <div className="empty-icon">📊</div>
+                                    <p>No low stock notifications available</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
-    </div>
-  )
+    );
 }
 
-export default AdminNotificationsComponent
+export default AdminNotificationsComponent;

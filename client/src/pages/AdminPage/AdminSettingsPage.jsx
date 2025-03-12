@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import '../../CSS/AdminCSS/AdminSettings.css';
 import AdminOrderingComponent from '../../components/AdminComponents/AdminSettings/AdminOrderingComponent';
 import AdminGeneralComponent from '../../components/AdminComponents/AdminSettings/AdminGeneralComponent';
@@ -7,11 +7,17 @@ import AdminPromotionsComponent from '../../components/AdminComponents/AdminSett
 import AdminInventoryComponent from '../../components/AdminComponents/AdminSettings/AdminInventoryComponent';
 import AdminUserRolesComponent from '../../components/AdminComponents/AdminSettings/AdminUserRolesComponent';
 
-
 function AdminSettingsPage() {
     const [activeTab, setActiveTab] = useState('General');
 
-    const tabs = ['General', 'Notifications', 'Promotions', 'Inventory', 'User Roles', 'Ordering'];
+    const tabs = [
+        { id: 'General', icon: '⚙️', hasNotifications: false },
+        { id: 'Notifications', icon: '🔔', hasNotifications: true, count: 3 },
+        { id: 'Promotions', icon: '🏷️', hasNotifications: false },
+        { id: 'Inventory', icon: '📦', hasNotifications: false },
+        { id: 'User Roles', icon: '👥', hasNotifications: false },
+        { id: 'Ordering', icon: '🛒', hasNotifications: false }
+    ];
 
     const renderActiveTab = () => {
         switch (activeTab) {
@@ -28,121 +34,42 @@ function AdminSettingsPage() {
             case 'Ordering':
                 return <AdminOrderingComponent />;
             default:
-                return <div>Select a tab to view its content</div>;
+                return <div className="settings-empty-state">Select a tab to view its content</div>;
         }
     };
 
-  return (
-    <div className='admin-settings-container'>
-        <div className='settings-sidebar'>
-        <ul>
-            {
-                tabs.map((tab) => (
-                    <li
-                    key={tab}
-                    className={activeTab === tab ? 'active-tab' : ''}
-                    onClick={() => setActiveTab(tab)}
-                    style={{ position: 'relative' }}
-                    >
-                    {tab}
-                    {
-                        tab === 'Notifications' && (
-                            <span className="notification-badge"></span>
-                        )
-                    }
-                    </li>
-                ))
-            }
-        </ul>
-
+    return (
+        <div className="settings-page-container">
+            <div className="settings-header">
+                <h1>{activeTab} Settings</h1>
+                <p className="settings-breadcrumbs">Dashboard / Settings / {activeTab}</p>
+            </div>
+            
+            <div className="settings-tabs-wrapper">
+                <div className="settings-tabs">
+                    {tabs.map((tab) => (
+                        <div
+                            key={tab.id}
+                            className={`settings-tab ${activeTab === tab.id ? 'settings-tab-active' : ''}`}
+                            onClick={() => setActiveTab(tab.id)}
+                        >
+                            <span className="settings-tab-icon">{tab.icon}</span>
+                            <span className="settings-tab-text">{tab.id}</span>
+                            {tab.hasNotifications && (
+                                <span className="settings-notification-badge" data-count={tab.count}>
+                                    {tab.count}
+                                </span>
+                            )}
+                        </div>
+                    ))}
+                </div>
+                
+                <div className="settings-tab-content">
+                    {renderActiveTab()}
+                </div>
+            </div>
         </div>
-
-        <div className='settings-content'>
-            <h2>{activeTab} Settings</h2>
-            {renderActiveTab()}
-        </div>
-    </div>
-  )
+    );
 }
 
-export default AdminSettingsPage
-// import React, { useState } from 'react'
-// import '../../CSS/AdminCSS/AdminSettings.css';
-// import AdminOrderingComponent from '../../components/AdminComponents/AdminSettings/AdminOrderingComponent';
-// import AdminGeneralComponent from '../../components/AdminComponents/AdminSettings/AdminGeneralComponent';
-// import AdminNotificationsComponent from '../../components/AdminComponents/AdminSettings/AdminNotificationsComponent';
-// import AdminPromotionsComponent from '../../components/AdminComponents/AdminSettings/AdminPromotionsComponent';
-// import AdminInventoryComponent from '../../components/AdminComponents/AdminSettings/AdminInventoryComponent';
-// import AdminUserRolesComponent from '../../components/AdminComponents/AdminSettings/AdminUserRolesComponent';
-// import { toast, ToastContainer } from 'react-toastify';
-// import 'react-toastify/dist/ReactToastify.css';
-
-// function AdminSettingsPage() {
-//     const [activeTab, setActiveTab] = useState('Ordering');
-
-//     const tabs = ['General', 'Notifications', 'Promotions', 'Inventory', 'User Roles', 'Ordering'];
-
-//     const handleTabClick = (tab) => {
-//         if(tab === 'General'){
-//             toast.info('This feature is not available yet, maybe soon!', {
-//                 position: "top-right",
-//                 autoClose: 3000,
-//                 hideProgressBar: false,
-//                 closeOnClick: true,
-//                 pauseOnHover: true,
-//                 draggable: true,
-//                 progress: undefined,
-//             });
-//             return;
-//         }
-//         setActiveTab(tab);
-//     };
-
-//     const renderActiveTab = () => {
-//         switch (activeTab) {
-//             case 'General':
-//                 return <AdminGeneralComponent />;
-//             case 'Notifications':
-//                 return <AdminNotificationsComponent />;
-//             case 'Promotions':
-//                 return <AdminPromotionsComponent />;
-//             case 'Inventory':
-//                 return <AdminInventoryComponent />;
-//             case 'User Roles':
-//                 return <AdminUserRolesComponent />;
-//             case 'Ordering':
-//                 return <AdminOrderingComponent />;
-//             default:
-//                 return <div>Select a tab to view its content</div>;
-//         }
-//     };
-
-//   return (
-//     <div className='admin-settings-container'>
-//         <div className='settings-sidebar'>
-//             <ul>
-//                 {
-//                     tabs.map((tab) => (
-//                         <li
-//                         key={tab}
-//                         className={activeTab === tab ? 'active-tab' : ''}
-//                         onClick={() => handleTabClick(tab)}
-//                         >
-//                             {tab}
-//                         </li>
-//                     ))
-//                 }
-//             </ul>
-//         </div>
-
-//         <div className='settings-content'>
-//             <h2>{activeTab} Settings</h2>
-//             {renderActiveTab()}
-//         </div>
-        
-//         <ToastContainer />
-//     </div>
-//   )
-// }
-
-// export default AdminSettingsPage
+export default AdminSettingsPage;

@@ -1,83 +1,465 @@
 
-
 .admin-promotions-container{
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    max-width: 1200px;
+    margin: 20px auto;
 }
-
-.admin-promotions-header-table,
-.admin-promotions-table{
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: #fff;
-}
-
-.admin-promotions-header-table th,
-.admin-promotions-table th{
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-    color: #555;
-    background-color: #f2f2f2;
-}
-
-.admin-promotions-header-table td,
-.admin-promotions-table td{
-    padding: 15px;
-    border: 1px solid #eaeaea;
-    color: #333;
-    vertical-align: middle;
-}
-
-.admin-promotions-table .product-image-name{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.admin-promotions-table .product-image-name img{
-    height: 50px;
-    width: 50px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.admin-promotions-container .admin-promotions-controls{
+  
+  /* Header Section */
+.admin-promotions-container .admin-promotions-header{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e9ecef;
 }
-
-.admin-promotions-container .admin-promotions-controls button{
-    padding: 10px 20px;
-    font-size: 14px;
-    border-radius: 5px;
+  
+.admin-promotions-container .admin-promotions-header h2{
+    font-size: 1.8rem;
+    color: #212529;
+    margin: 0;
+    font-weight: 600;
+}
+  
+.admin-promotions-container .admin-promotions-stats{
+    display: flex;
+    gap: 20px;
+}
+  
+.admin-promotions-container .stat-item{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 12px 20px;
+    border-radius: 8px;
+    min-width: 120px;
+}
+  
+.admin-promotions-container .stat-value{
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #077A37;
+}
+  
+.admin-promotions-container .stat-label{
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 4px;
+}
+  
+  /* Filters */
+.admin-promotions-container .admin-promotions-filters{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 16px;
+}
+  
+.admin-promotions-container .search-container{
+    flex: 1;
+    max-width: 400px;
+}
+  
+.admin-promotions-container .search-input{
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    transition: all 0.2s;
+}
+  
+.admin-promotions-container .search-input:focus{
+    outline: none;
+    border-color: #077A37;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+  
+.admin-promotions-container .filters-right{
+    display: flex;
+    gap: 16px;
+}
+  
+.admin-promotions-container .category-select{
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
     cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    min-width: 180px;
 }
-
-.admin-promotions-container .admin-promotions-controls button:nth-child(2){
-    background-color: #077a37;
+  
+.admin-promotions-container .category-select:focus{
+    outline: none;
+    border-color: #077A37;
+}
+  
+  /* Batch Filters */
+.admin-promotions-container .batch-filters{
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e9ecef;
+}
+  
+.admin-promotions-container .batch-button{
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    background-color: #f1f3f5;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+  
+.admin-promotions-container .batch-button:hover{
+    background-color: #e9ecef;
+}
+  
+.admin-promotions-container .batch-button.active{
+    background-color: #077A37;
     color: white;
+    border-color: #077A37;
 }
-
-.admin-promotions-container .admin-promotions-controls button:nth-child(2):hover{
-    background-color: #065a2a;
+  
+  /* Table Styles */
+.admin-promotions-container .table-container{
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
-
-.admin-promotions-container .admin-promotions-controls button:nth-child(3){
-    background-color: transparent;
-    color: #5d6679;
-    border: 1px solid #d0d3d9;
+  
+.admin-promotions-container .admin-promotions-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
 }
-
-.admin-promotions-container .admin-promotions-controls button:nth-child(3):hover{
-    background-color: #077a37;
-    color: white;
+  
+.admin-promotions-container .admin-promotions-table th{
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
 }
-
-.button-edit-icon{
+  
+.admin-promotions-container .admin-promotions-table td{
+    padding: 16px;
+    border-bottom: 1px solid #e9ecef;
+    color: #212529;
+    vertical-align: middle;
+}
+  
+  /* Product Cell */
+.admin-promotions-container .product-info{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+  
+.admin-promotions-container .product-image-container{
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid #e9ecef;
+}
+  
+.admin-promotions-container .product-image-container img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+  
+.admin-promotions-container .product-details{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+  
+.admin-promotions-container .product-name{
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+  
+.admin-promotions-container .stock-badge{
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+  
+.admin-promotions-container .in-stock{
+    background-color: #e3f6e8;
+    color: #1d7d4e;
+}
+  
+.admin-promotions-container .low-stock{
+    background-color: #fff8e2;
+    color: #b7791f;
+}
+  
+.admin-promotions-container .out-of-stock{
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+  
+  /* Discount Cell */
+.admin-promotions-container .discount-cell{
+    width: 100px;
+}
+  
+.admin-promotions-container .discount-badge{
+    display: inline-block;
+    background-color: #ebf5ff;
+    color: #1a56db;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    text-align: center;
+}
+  
+  /* Price Cell */
+.admin-promotions-container .price-cell{
+    width: 120px;
+}
+  
+.admin-promotions-container .price-display{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+  
+.admin-promotions-container .original-price{
+    text-decoration: line-through;
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+  
+.admin-promotions-container .discounted-price{
+    font-weight: 600;
+    color: #e53e3e;
+}
+  
+  /* Status Cell */
+.admin-promotions-container .status-cell{
+    width: 180px;
+}
+  
+.admin-promotions-container .discount-status{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+  
+.admin-promotions-container .progress-container{
+    width: 100%;
+    height: 6px;
+    background-color: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+}
+  
+.admin-promotions-container .progress-bar{
+    height: 100%;
+    background-color: #077A37;
+    border-radius: 3px;
+}
+  
+.admin-promotions-container .status-date{
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+  
+.admin-promotions-container .expiring-text{
+    color: #e53e3e;
+    font-weight: 500;
+}
+  
+.admin-promotions-container .no-end-date{
+    color: #6c757d;
+    font-style: italic;
+    font-size: 0.85rem;
+}
+  
+  /* Actions Cell */
+.admin-promotions-container .actions-cell{
+    width: 100px;
+    text-align: center;
+}
+  
+.admin-promotions-container .action-button{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 6px;
     border: none;
-    background: none;
+    font-size: 0.85rem;
+    font-weight: 500;
     cursor: pointer;
+    transition: all 0.2s;
+    background-color: #f8f9fa;
+    color: #495057;
+}
+  
+.admin-promotions-container .edit-button:hover{
+    background-color: #e9ecef;
+}
+  
+.admin-promotions-container .action-button img{
+    width: 16px;
+    height: 16px;
+}
+  
+  /* Row States */
+.admin-promotions-container .admin-promotions-table tr:hover{
+    background-color: #f8f9fa;
+}
+  
+.admin-promotions-container .admin-promotions-table tr.archived-product{
+    opacity: 0.7;
+    background-color: #f8f9fa;
+}
+  
+.admin-promotions-container .admin-promotions-table tr.expiring-soon{
+    background-color: #fff8f3;
+}
+  
+  /* Empty & Loading States */
+.admin-promotions-container .no-data-message,
+.admin-promotions-container .loading-container,
+.admin-promotions-container .error-message{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    color: #6c757d;
+}
+  
+.admin-promotions-container .no-data-icon{
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+}
+  
+.admin-promotions-container .no-data-message p,
+.admin-promotions-container .loading-container p{
+    margin: 6px 0;
+    font-size: 1rem;
+}
+  
+.admin-promotions-container .loading-spinner{
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e9ecef;
+    border-radius: 50%;
+    border-top-color: #077A37;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+  
+  @keyframes spin{
+    to{
+      transform: rotate(360deg);
+}
+}
+  
+.admin-promotions-container .error-message{
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 20px;
+}
+  
+  /* Responsive Styles */
+  @media (max-width: 992px){
+  .admin-promotions-container .admin-promotions-header{
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+}
+    
+  .admin-promotions-container .admin-promotions-stats{
+      width: 100%;
+}
+    
+  .admin-promotions-container .stat-item{
+      flex: 1;
+}
+}
+  
+  @media (max-width: 768px){
+  .admin-promotions-container .admin-promotions-container{
+      padding: 16px;
+}
+    
+  .admin-promotions-container .admin-promotions-filters{
+      flex-direction: column;
+      align-items: stretch;
+}
+    
+  .admin-promotions-container .search-container{
+      max-width: none;
+}
+    
+  .admin-promotions-container .filters-right{
+      justify-content: space-between;
+}
+    
+  .admin-promotions-container .admin-promotions-table th,
+  .admin-promotions-container .admin-promotions-table td{
+      padding: 12px 10px;
+}
+    
+  .admin-promotions-container .product-image-container{
+      width: 48px;
+      height: 48px;
+}
+}
+  
+  @media (max-width: 576px){
+  .admin-promotions-container .admin-promotions-stats{
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+}
+    
+  .admin-promotions-container .stat-item{
+      width: 100%;
+      flex-direction: row;
+      justify-content: space-between;
+}
+    
+  .admin-promotions-container .action-button span{
+      display: none;
+}
+    
+  .admin-promotions-container .action-button{
+      padding: 8px;
+}
+    
+  .admin-promotions-container .batch-filters{
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+}
 }
