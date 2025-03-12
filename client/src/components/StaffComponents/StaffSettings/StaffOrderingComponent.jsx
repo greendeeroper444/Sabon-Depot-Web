@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios';
 import '../../../CSS/AdminCSS/AdminSettings/AdminOrderingComponent.css';
-import { orderDate, orderDate2 } from '../../../utils/OrderUtils';
+import axios from 'axios';
+import { orderDate2 } from '../../../utils/OrderUtils';
 import { toast } from 'react-hot-toast';
 
 function StaffOrderingComponent() {
@@ -22,9 +22,20 @@ function StaffOrderingComponent() {
     const [prevCount, setPrevCount] = useState(1);
     const [extentionId, setExtentionId] = useState(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        fetchExtentionPeriod();
+        const fetchData = async () => {
+            setIsLoading(true);
+            await Promise.all([
+                fetchExtentionPeriod(),
+                fetchDates(),
+                fetchTimes()
+            ]);
+            setIsLoading(false);
+        };
+        
+        fetchData();
     }, []);
 
     const fetchExtentionPeriod = async() => {
@@ -36,7 +47,8 @@ function StaffOrderingComponent() {
                 setExtentionId(response.data.data._id);
             }
         } catch (error) {
-            console.error( error);
+            console.error(error);
+            toast.error('Failed to fetch extension period');
         }
     };
 
@@ -60,17 +72,17 @@ function StaffOrderingComponent() {
                 extentionPeriod: count 
             });
             setShowConfirmation(false);
-
             toast.success('Extension period updated successfully');
         } catch (error) {
             console.error(error);
+            toast.error('Failed to update extension period');
         }
     };
 
     const handleCancel = () => {
         setCount(prevCount);
         setShowConfirmation(false);
-        toast.error('Extension period updated cancelled');
+        toast.error('Extension period update cancelled');
     };
 
     const fetchDates = async() => {
@@ -79,6 +91,7 @@ function StaffOrderingComponent() {
             setDates(response.data);
         } catch (error) {
             console.error('Error fetching dates:', error);
+            toast.error('Failed to fetch unavailable dates');
         }
     };
 
@@ -88,13 +101,9 @@ function StaffOrderingComponent() {
             setTimeSlots(response.data);
         } catch (error) {
             console.error('Error fetching time slots:', error);
+            toast.error('Failed to fetch time slots');
         }
     };
-
-    useEffect(() => {
-        fetchDates();
-        fetchTimes();
-    }, []);
 
     //check if date already exists
     const isDateDuplicate = (dateToCheck) => {
@@ -105,6 +114,11 @@ function StaffOrderingComponent() {
     };
 
     const handleAddDate = async() => {
+        if (!date) {
+            toast.error('Please select a date');
+            return;
+        }
+        
         try {
             //check for duplicate date
             if(isDateDuplicate(date)){
@@ -124,19 +138,23 @@ function StaffOrderingComponent() {
     };
 
     const handleDeleteDate = async(id) => {
-        try {
-            await axios.delete(`/adminDatePicker/deleteDate/${id}`);
-            fetchDates();
-            toast.success('Date deleted successfully');
-        } catch (error) {
-            console.error('Error deleting date:', error);
-            toast.error('Failed to delete date');
+        if (window.confirm('Are you sure you want to delete this date?')) {
+            try {
+                await axios.delete(`/adminDatePicker/deleteDate/${id}`);
+                fetchDates();
+                toast.success('Date deleted successfully');
+            } catch (error) {
+                console.error('Error deleting date:', error);
+                toast.error('Failed to delete date');
+            }
         }
     };
 
     const openUpdateDateModal = (id, existingDate) => {
         setSelectedDateId(id);
-        setDate(existingDate);
+        // Format date for the input field
+        const formattedDate = new Date(existingDate).toISOString().split('T')[0];
+        setDate(formattedDate);
         setIsUpdateDateModalOpen(true);
     };
 
@@ -171,12 +189,13 @@ function StaffOrderingComponent() {
                 toast.error('Start time must be before end time');
                 return;
             }
-            
-            //check for overlapping time slots
-            // if(isTimeSlotOverlapping(newStartTime, newEndTime)){
-            //     toast.error('This time slot overlaps with an existing time slot');
-            //     return;
-            // }
+            +
+            /*
+            if(isTimeSlotOverlapping(newStartTime, newEndTime)){
+                toast.error('This time slot overlaps with an existing time slot');
+                return;
+            }
+            */
             
             await axios.post('/adminDatePicker/createTimeSlot', {
                 startTime: newStartTime,
@@ -194,13 +213,15 @@ function StaffOrderingComponent() {
     };
 
     const handleDeleteTime = async(id) => {
-        try {
-            await axios.delete(`/adminDatePicker/deleteTime/${id}`);
-            fetchTimes();
-            toast.success('Time slot deleted successfully');
-        } catch (error) {
-            console.error('Error deleting time:', error);
-            toast.error('Failed to delete time slot');
+        if (window.confirm('Are you sure you want to delete this time slot?')) {
+            try {
+                await axios.delete(`/adminDatePicker/deleteTime/${id}`);
+                fetchTimes();
+                toast.success('Time slot deleted successfully');
+            } catch (error) {
+                console.error('Error deleting time:', error);
+                toast.error('Failed to delete time slot');
+            }
         }
     };
 
@@ -213,11 +234,12 @@ function StaffOrderingComponent() {
                 return;
             }
             
-            //check for overlapping time slots (excluding the current one)
-            // if(isTimeSlotOverlapping(updatedStartTime, updatedEndTime, selectedTimeId)){
-            //     toast.error('This time slot overlaps with an existing time slot');
-            //     return;
-            // }
+            /*
+            if(isTimeSlotOverlapping(updatedStartTime, updatedEndTime, selectedTimeId)){
+                toast.error('This time slot overlaps with an existing time slot');
+                return;
+            }
+            */
             
             await axios.put(`/adminDatePicker/updateTimeSlot/${selectedTimeId}`, {
                 startTime: updatedStartTime,
@@ -242,6 +264,11 @@ function StaffOrderingComponent() {
     };
 
     const handleUpdateDate = async() => {
+        if (!date) {
+            toast.error('Please select a date');
+            return;
+        }
+        
         try {
             //check if the updated date conflicts with another date (excluding the current one)
             const isDuplicate = dates.some(item => {
@@ -266,75 +293,199 @@ function StaffOrderingComponent() {
         }
     };
 
-  return (
-    <div className='admin-ordering-component'>
+    // Format time for display
+    const formatTime = (timeString) => {
+        return new Date(`1970-01-01T${timeString}`).toLocaleTimeString([], { 
+            hour: 'numeric', 
+            minute: '2-digit', 
+            hour12: true 
+        });
+    };
 
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div className='extention-period'>
-                <h3>Extension Period</h3>
-                <div className='counter'>
-                    <button className='btn minus' onClick={handleDecrease}>-</button>
-                    <span className='count'>{count}</span>
-                    <button className='btn plus' onClick={handleIncrease}>+</button>
-                    {
-                        showConfirmation && (
-                            <div className='confirmation'>
-                                <span className='confirm-check' onClick={handleConfirm}>✔️</span>
-                                <span className='cancel-times' onClick={handleCancel}>❌</span>
-                            </div>
-                        
-                        )
-                    }
+    if (isLoading) {
+        return <div className='loading-spinner'>Loading...</div>;
+    }
+
+  return (
+    <div className='admin-ordering-container'>
+        <h2 className='admin-section-title'>Ordering Settings</h2>
+        
+        <div className='admin-panel'>
+            <div className='extension-period-container'>
+                <h3 className='section-title'>Extension Period (days)</h3>
+                <div className='counter-container'>
+                    <button 
+                        className={`counter-btn decrease ${count <= 1 ? 'disabled' : ''}`} 
+                        onClick={handleDecrease}
+                        disabled={count <= 1}
+                    >
+                        <span className='material-icons'>-</span>
+                    </button>
+                    <span className='counter-value'>{count}</span>
+                    <button className='counter-btn increase' onClick={handleIncrease}>
+                        <span className='material-icons'>+</span>
+                    </button>
+
+                    {showConfirmation && (
+                        <div className='confirmation-controls'>
+                            <button className='confirm-btn' onClick={handleConfirm} title='Confirm'>
+                                <span className='material-icons'>check</span>
+                            </button>
+                            <button className='cancel-btn' onClick={handleCancel} title='Cancel'>
+                                <span className='material-icons'>close</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
+                <p className='help-text'>Set the number of days in advance customers can place orders</p>
             </div>
 
-           
+            <div className='action-buttons'>
+                <button onClick={() => setIsDateModalOpen(true)} className='action-btn add-date-btn'>
+                    <span className='material-icons'></span>
+                    Add Unavailable Date
+                </button>
+                <button onClick={() => setIsTimeModalOpen(true)} className='action-btn add-time-btn'>
+                    <span className='material-icons'></span>
+                    Add Time Slot
+                </button>
+            </div>
         </div>
 
-        <br />
-        <br />
-        <div className='action-buttons'>
-            <button
-            onClick={() => setIsDateModalOpen(true)}
-            className='open-modal-button'
-            >
-            Add Date
-            </button>
-            <button
-            onClick={() => setIsTimeModalOpen(true)}
-            className='open-modal-button'
-            >
-            Add Time
-            </button>
+        <div className='data-tables'>
+            <div className='table-container'>
+                <h3 className='table-title'>
+                    <span className='material-icons'></span>
+                    Unavailable Dates
+                </h3>
+                {
+                    dates.length === 0 ? (
+                        <div className='empty-state'>
+                            No unavailable dates added yet
+                        </div>
+                    ) : (
+                        <table className='data-table'>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    dates.map((entry, index) => (
+                                        <tr key={entry._id || index}>
+                                            <td>{index + 1}</td>
+                                            <td>{orderDate2(entry.date)}</td>
+                                            <td className='action-cell'>
+                                                <button 
+                                                    className='edit-btn' 
+                                                    onClick={() => openUpdateDateModal(entry._id, entry.date)}
+                                                    title='Edit date'
+                                                >
+                                                    <span className='material-icons'>edit</span>
+                                                </button>
+                                                <button 
+                                                    className='delete-btn' 
+                                                    onClick={() => handleDeleteDate(entry._id)}
+                                                    title='Delete date'
+                                                >
+                                                    <span className='material-icons'>delete</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
+                            </tbody>
+                        </table>
+                    )
+                }
+            </div>
+
+            <div className='table-container'>
+                <h3 className='table-title'>
+                    <span className='material-icons'></span>
+                    Available Time Slots
+                </h3>
+                {
+                    timeSlots.length === 0 ? (
+                        <div className='empty-state'>
+                            No time slots added yet
+                        </div>
+                    ) : (
+                        <table className='data-table'>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    timeSlots.map((entry, index) => (
+                                        <tr key={entry._id || index}>
+                                            <td>{index + 1}</td>
+                                            <td>{formatTime(entry.time.startTime)}</td>
+                                            <td>{formatTime(entry.time.endTime)}</td>
+                                            <td className='action-cell'>
+                                                <button 
+                                                    className='edit-btn' 
+                                                    onClick={() => openUpdateTimeModal(entry._id, entry.time)}
+                                                    title='Edit time slot'
+                                                >
+                                                    <span className='material-icons'>edit</span>
+                                                </button>
+                                                <button 
+                                                    className='delete-btn' 
+                                                    onClick={() => handleDeleteTime(entry._id)}
+                                                    title='Delete time slot'
+                                                >
+                                                    <span className='material-icons'>delete</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
+                            </tbody>
+                        </table>
+                    )
+                }
+            </div>
         </div>
 
-
-
+        {/* date modal */}
         {
             isDateModalOpen && (
                 <div className='modal-overlay'>
                     <div className='modal-content'>
-                        <h2>Add Date</h2>
+                        <div className='modal-header'>
+                            <h3>Add Unavailable Date</h3>
+                            <button className='close-modal-btn' onClick={() => setIsDateModalOpen(false)}>
+                                <span className='material-icons'>close</span>
+                            </button>
+                        </div>
                         <div className='modal-body'>
-                            <label>
-                                Select Date:
+                            <div className='form-group'>
+                                <label htmlFor='date-input'>Select Date:</label>
                                 <input
-                                type='date'
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                className='date-input'
+                                    id='date-input'
+                                    type='date'
+                                    value={date}
+                                    onChange={(e) => setDate(e.target.value)}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    className='date-input'
                                 />
-                            </label>
+                            </div>
                         </div>
                         <div className='modal-footer'>
-                            <button onClick={handleAddDate} className='submit-button'>
-                                Submit
-                            </button>
-                            <button
-                            onClick={() => setIsDateModalOpen(false)}
-                            className='close-button'
-                            >
+                            <button onClick={() => setIsDateModalOpen(false)} className='cancel-modal-btn'>
                                 Cancel
+                            </button>
+                            <button onClick={handleAddDate} className='submit-modal-btn'>
+                                Add Date
                             </button>
                         </div>
                     </div>
@@ -342,165 +493,134 @@ function StaffOrderingComponent() {
             )
         }
 
-
-  
-{
+        {/* Time Modal */}
+        {
             isTimeModalOpen && (
                 <div className='modal-overlay'>
                     <div className='modal-content'>
-                        <h2>Add Time</h2>
+                        <div className='modal-header'>
+                            <h3>Add Time Slot</h3>
+                            <button className='close-modal-btn' onClick={() => setIsTimeModalOpen(false)}>
+                                <span className='material-icons'>close</span>
+                            </button>
+                        </div>
                         <div className='modal-body'>
-                            <label>
-                                Start Time:
+                            <div className='form-group'>
+                                <label htmlFor='start-time'>Start Time:</label>
                                 <input
-                                type='time'
-                                value={newStartTime}
-                                onChange={(e) => setNewStartTime(e.target.value)}
-                                className='time-input'
+                                    id='start-time'
+                                    type='time'
+                                    value={newStartTime}
+                                    onChange={(e) => setNewStartTime(e.target.value)}
+                                    className='time-input'
                                 />
-                            </label>
-                            <label>
-                                End Time:
+                            </div>
+                            <div className='form-group'>
+                                <label htmlFor='end-time'>End Time:</label>
                                 <input
-                                type='time'
-                                value={newEndTime}
-                                onChange={(e) => setNewEndTime(e.target.value)}
-                                className='time-input'
+                                    id='end-time'
+                                    type='time'
+                                    value={newEndTime}
+                                    onChange={(e) => setNewEndTime(e.target.value)}
+                                    className='time-input'
                                 />
-                            </label>
+                            </div>
                         </div>
                         <div className='modal-footer'>
-                            <button onClick={handleCreateTimeSlot} className='submit-button'>Submit</button>
-                            <button onClick={() => setIsTimeModalOpen(false)} className='close-button'>Cancel</button>
+                            <button onClick={() => setIsTimeModalOpen(false)} className='cancel-modal-btn'>
+                                Cancel
+                            </button>
+                            <button onClick={handleCreateTimeSlot} className='submit-modal-btn'>
+                                Add Time Slot
+                            </button>
                         </div>
                     </div>
                 </div>
             )
         }
 
-         {/* update date modal */}
+        {/* Update Date Modal */}
         {
             isUpdateDateModalOpen && (
-                    <div className='modal-overlay'>
-                        <div className='modal-content'>
-                            <h2>Update Date</h2>
-                            <div className='modal-body'>
-                                <label>
-                                    Select Date:
-                                    <input
-                                    type="date"
+                <div className='modal-overlay'>
+                    <div className='modal-content'>
+                        <div className='modal-header'>
+                            <h3>Update Unavailable Date</h3>
+                            <button className='close-modal-btn' onClick={() => setIsUpdateDateModalOpen(false)}>
+                                <span className='material-icons'>close</span>
+                            </button>
+                        </div>
+                        <div className='modal-body'>
+                            <div className='form-group'>
+                                <label htmlFor='update-date-input'>Select Date:</label>
+                                <input
+                                    id='update-date-input'
+                                    type='date'
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
+                                    min={new Date().toISOString().split('T')[0]}
                                     className='date-input'
-                                    />
-                                </label>
-                            </div>
-                            <div className='modal-footer'>
-                                <button onClick={handleUpdateDate} className='submit-button'>
-                                    Update
-                                </button>
-                                <button onClick={() => setIsUpdateDateModalOpen(false)} className='close-button'>
-                                    Cancel
-                                </button>
+                                />
                             </div>
                         </div>
+                        <div className='modal-footer'>
+                            <button onClick={() => setIsUpdateDateModalOpen(false)} className='cancel-modal-btn'>
+                                Cancel
+                            </button>
+                            <button onClick={handleUpdateDate} className='submit-modal-btn'>
+                                Update Date
+                            </button>
+                        </div>
                     </div>
-                )
-            }
+                </div>
+            )
+        }
 
+        {/* Update Time Modal */}
         {
             isUpdateTimeModalOpen && (
                 <div className='modal-overlay'>
                     <div className='modal-content'>
-                        <h2>Update Time</h2>
+                        <div className='modal-header'>
+                            <h3>Update Time Slot</h3>
+                            <button className='close-modal-btn' onClick={() => setIsUpdateTimeModalOpen(false)}>
+                                <span className='material-icons'>close</span>
+                            </button>
+                        </div>
                         <div className='modal-body'>
-                            <label>
-                                Start Time:
+                            <div className='form-group'>
+                                <label htmlFor='update-start-time'>Start Time:</label>
                                 <input
-                                type='time'
-                                value={updatedStartTime}
-                                onChange={(e) => setUpdatedStartTime(e.target.value)}
-                                className='time-input'
+                                    id='update-start-time'
+                                    type='time'
+                                    value={updatedStartTime}
+                                    onChange={(e) => setUpdatedStartTime(e.target.value)}
+                                    className='time-input'
                                 />
-                            </label>
-                            <label>
-                                End Time:
+                            </div>
+                            <div className='form-group'>
+                                <label htmlFor='update-end-time'>End Time:</label>
                                 <input
-                                type='time'
-                                value={updatedEndTime}
-                                onChange={(e) => setUpdatedEndTime(e.target.value)}
-                                className='time-input'
+                                    id='update-end-time'
+                                    type='time'
+                                    value={updatedEndTime}
+                                    onChange={(e) => setUpdatedEndTime(e.target.value)}
+                                    className='time-input'
                                 />
-                            </label>
+                            </div>
                         </div>
                         <div className='modal-footer'>
-                            <button onClick={handleUpdateTimeSlot} className='submit-button'>Update</button>
-                            <button onClick={() => setIsUpdateTimeModalOpen(false)} className='close-button'>Cancel</button>
+                            <button onClick={() => setIsUpdateTimeModalOpen(false)} className='cancel-modal-btn'>
+                                Cancel
+                            </button>
+                            <button onClick={handleUpdateTimeSlot} className='submit-modal-btn'>
+                                Update Time Slot
+                            </button>
                         </div>
                     </div>
                 </div>
             )
         }
-
-
-
-        <div className='entries-list'>
-            <h3>Unavailable Dates</h3>
-            <table className='entries-table'>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        dates.map((entry, index) => (
-                        <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{orderDate2(entry.date)}</td>
-                            <td>
-                                <button className='edit-btn' onClick={() => openUpdateDateModal(entry._id, entry.date)}>Edit</button>
-                                {' '}
-                                <button className='delete-btn' onClick={() => handleDeleteDate(entry._id)}>Delete</button>
-                            </td>
-                        </tr>
-                        ))
-                    }
-                </tbody>
-            </table>
-
-            <h3>Available Times</h3>
-            <table className='entries-table'>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        timeSlots.map((entry, index) => (
-                            <tr key={entry._id}>
-                                <td>{index + 1}</td>
-                                <td>{new Date(`1970-01-01T${entry.time.startTime}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</td>
-                                <td>{new Date(`1970-01-01T${entry.time.endTime}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</td>
-
-                                <td>
-                                    <button className='edit-btn' onClick={() => openUpdateTimeModal(entry._id, entry.time)}>Edit</button>
-                                    {' '}
-                                    <button className='delete-btn' onClick={() => handleDeleteTime(entry._id)}>Delete</button>
-                                </td>
-                            </tr>
-                        ))
-                    }
-                </tbody>
-            </table>
-
-        </div>
     </div>
   )
 }
