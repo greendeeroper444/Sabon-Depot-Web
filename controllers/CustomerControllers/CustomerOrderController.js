@@ -213,6 +213,7 @@ const createOrderCustomer = async(req, res) => {
 
             const today = new Date();
             today.setUTCHours(0, 0, 0, 0); //set time to midnight for the day field
+            
             const existingRecord = await TotalSaleModel.findOne({
                 productName: item.productId.productName,
                 day: today,
@@ -414,7 +415,7 @@ const directCheckoutCustomer = async(req, res) => {
                 try {
                     //update product stock
                     await ProductModel.findByIdAndUpdate(productId, {
-                        $inc: { quantity: -quantity },
+                        $inc: {quantity: -quantity},
                     });
         
                     //handle total sales

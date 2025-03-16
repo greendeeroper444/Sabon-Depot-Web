@@ -2,12 +2,13 @@ const AdminAuthModel = require("../../models/AdminModels/AdminAuthModel");
 const RefillProductModel = require("../../models/RefillProductModel");
 const jwt = require('jsonwebtoken');
 const { getInventoryReport } = require("./AdminReportController");
+const ProductionReportModel = require("../../models/ProductionReportModel");
 
 const addRefillProductAdmin = async(req, res) => {
     try {
-        const {productName, category, quantity, price, color} = req.body;
+        const {productCode, productName, category, quantity, price, color} = req.body;
 
-        if(!productName || !category || !quantity || !price || !color){
+        if(!productCode || !productName || !category || !quantity || !price || !color){
             return res.json({
                 error: 'Please provide all required fields'
             });
@@ -39,6 +40,7 @@ const addRefillProductAdmin = async(req, res) => {
 
             //create new product with the determined batch
             const newRefillProduct = await RefillProductModel.create({
+                productCode,
                 productName,
                 category,
                 quantity,
@@ -49,6 +51,35 @@ const addRefillProductAdmin = async(req, res) => {
                 uploaderType: 'Admin',
                 createdBy: adminExists.fullName,
             });
+
+            //get today's date and strip time components for date-only comparison
+            const today = new Date();
+            const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+
+            //check if there's already a production report for today (date-only comparison)
+            const existingProductionReport = await ProductionReportModel.findOne({
+                date: {
+                    $gte: startOfDay,
+                    $lte: endOfDay
+                }
+            });
+
+            if(existingProductionReport){
+                //update existing report by adding the new quantity
+                await ProductionReportModel.updateOne(
+                    {_id: existingProductionReport._id},
+                    {$inc: {productionQuantity: parseInt(quantity)}}
+                );
+            } else{
+                //create new report for today
+                await ProductionReportModel.create({
+                    productId: newRefillProduct._id,
+                    productName: productName,
+                    productionQuantity: parseInt(quantity),
+                    date: startOfDay,
+                });
+            }
             
             await getInventoryReport(
                 newRefillProduct._id,
@@ -88,9 +119,9 @@ const getRefillProductAdmin = async(req, res) => {
 const editRefillProductAdmin = async(req, res) => {
     try {
         const {productId} = req.params;
-        const {productName, category, quantity, price, color} = req.body;
+        const {productCode, productName, category, quantity, price, color} = req.body;
 
-        if(!productName || !category || !quantity || !price || !color){
+        if(!productCode || !productName || !category || !quantity || !price || !color){
             return res.json({
                 error: 'Please provide all required fields',
             });
@@ -122,7 +153,7 @@ const editRefillProductAdmin = async(req, res) => {
 
             const updatedProduct = await RefillProductModel.findByIdAndUpdate(
                 productId,
-                {productName, category, quantity, price, color, productSize},
+                {productCode, productName, category, quantity, price, color, productSize},
                 {new: true}
             );
 

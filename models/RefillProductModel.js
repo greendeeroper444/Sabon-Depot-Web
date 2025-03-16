@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 
 const RefillProductSchema = new mongoose.Schema({
+    productCode: {
+        type: String,
+        required: true,
+        trim: true
+    },
     productName: {
         type: String,
         required: true,

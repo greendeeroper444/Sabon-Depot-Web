@@ -114,7 +114,48 @@ export function calculateSubtotalModal(cartItems) {
 //         }),
 //     };
 // }
-export function calculateSubtotalModalStaff(cartItems){
+// export function calculateSubtotalModalStaff(cartItems){
+//     if(!Array.isArray(cartItems) || cartItems.length === 0){
+//         return {
+//             rawSubtotal: "0.00",
+//             discountAmount: "0.00",
+//             discountRate: 0,
+//             finalSubtotal: "0.00",
+//         };
+//     }
+
+//     const rawSubtotal = cartItems.reduce((acc, cartItem) => {
+//         const price = calculateFinalRefillPriceModalStaff(cartItem);
+//         return acc + price * cartItem.quantity;
+//     }, 0);
+
+//     let discountRate = 0;
+//     if(rawSubtotal >= 2000 && rawSubtotal < 10000){
+//         discountRate = 0.05; //5% discount
+//     }else if (rawSubtotal >= 10000){
+//         discountRate = 0.10; //10% discount
+//     }
+
+//     const discountAmount = rawSubtotal * discountRate;
+//     const finalSubtotal = rawSubtotal - discountAmount;
+
+//     return {
+//         rawSubtotal: rawSubtotal.toLocaleString('en-US', {
+//             minimumFractionDigits: 2,
+//             maximumFractionDigits: 2,
+//         }),
+//         discountAmount: discountAmount.toLocaleString('en-US', {
+//             minimumFractionDigits: 2,
+//             maximumFractionDigits: 2,
+//         }),
+//         discountRate: discountRate * 100,
+//         finalSubtotal: finalSubtotal.toLocaleString('en-US', {
+//             minimumFractionDigits: 2,
+//             maximumFractionDigits: 2,
+//         }),
+//     };
+// }
+export function calculateSubtotalModalStaff(cartItems, manualDiscount = null) {
     if(!Array.isArray(cartItems) || cartItems.length === 0){
         return {
             rawSubtotal: "0.00",
@@ -130,10 +171,17 @@ export function calculateSubtotalModalStaff(cartItems){
     }, 0);
 
     let discountRate = 0;
-    if(rawSubtotal >= 2000 && rawSubtotal < 10000){
-        discountRate = 0.05; //5% discount
-    }else if (rawSubtotal >= 10000){
-        discountRate = 0.10; //10% discount
+    
+    //if manual discount is provided, use that
+    if (manualDiscount !== null && !isNaN(manualDiscount)) {
+        discountRate = manualDiscount / 100; //convert percentage to decimal
+    } else{
+        //otherwise use automatic discount based on thresholds
+        if (rawSubtotal >= 2000 && rawSubtotal < 10000) {
+            discountRate = 0.05; //5% discount
+        } else if (rawSubtotal >= 10000) {
+            discountRate = 0.10; //10% discount
+        }
     }
 
     const discountAmount = rawSubtotal * discountRate;

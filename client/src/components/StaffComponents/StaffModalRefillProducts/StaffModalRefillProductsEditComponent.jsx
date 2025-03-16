@@ -7,10 +7,11 @@ import { ChromePicker, TwitterPicker } from 'react-color';
 function StaffModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProducts, selectedProduct}) {
     const [categories, setCategories] = useState([]);
     const [dataInput, setDataInput] = useState({
+        productCode: '',
         productName: '', 
         category: '', 
-        drum: '', 
-        volume: '',
+        price: '', 
+        quantity: '',
         color: '#ff0000'
     })
     const [showPicker, setShowPicker] = useState(false);
@@ -19,10 +20,11 @@ function StaffModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
     useEffect(() => {
         if (selectedProduct) {
             setDataInput({
+                productCode: selectedProduct.productCode || '',
                 productName: selectedProduct.productName || '',
                 category: selectedProduct.category || '',
-                drum: selectedProduct.drum || '',
-                volume: selectedProduct.volume || '',
+                price: selectedProduct.price || '',
+                quantity: selectedProduct.quantity || '',
                 color: selectedProduct.color || '#ff0000'
             });
         }
@@ -69,27 +71,28 @@ function StaffModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
     const handleEditProductStaff = async(e) => {
         e.preventDefault();
 
-        const {productName, category, drum, volume, color} = dataInput;
+        const {productCode, productName, category, price, quantity, color} = dataInput;
 
-        const updatedVolume = parseInt(dataInput.volume) + parseInt(inputValue);
+        const updatedVolume = parseInt(dataInput.quantity) + parseInt(inputValue);
     
-        if(!productName || !category || !drum || !volume){
+        if(!productCode || !productName || !category || !price || !quantity){
             toast.error('Please input all fields');
             return;
         }
 
-        if (updatedVolume > 105) {
-            toast.error('volume cannot exceed 105.');
-            return;
-        }
+        // if (updatedVolume > 105) {
+        //     toast.error('volume cannot exceed 105.');
+        //     return;
+        // }
     
     
         try {
             const response = await axios.put(`/staffRefillProduct/editRefillProductStaff/${selectedProduct._id}`, {
+                productCode,
                 productName,
                 category,
-                drum,
-                volume: updatedVolume,
+                price,
+                quantity: updatedVolume,
                 color
             }, {
                 headers: {'Content-Type': 'application/json'}
@@ -123,6 +126,15 @@ function StaffModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
                     <div className='admin-modal-products-add-inputs'>
                         <div className='label-text'>
                             <div>
+                                <label>PRODUCT CODE:</label>
+                                <input type="text"
+                                value={dataInput.productCode} 
+                                onChange={(e) => setDataInput({...dataInput, productCode: e.target.value})}
+                                />
+                            </div>
+                        </div>
+                        <div className='label-text'>
+                            <div>
                                 <label>PRODUCT NAME:</label>
                                 <input type="text"
                                 value={dataInput.productName} 
@@ -154,12 +166,32 @@ function StaffModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
                         </div>
                         <div className='label-text'>
                             <div>
-                                <label>Drum Quantity:</label>
+                                <label>Price:</label>
                                 <input type="number"
-                                value={dataInput.drum} 
-                                onChange={(e) => setDataInput({...dataInput, drum: e.target.value})} 
+                                value={dataInput.price} 
+                                onChange={(e) => setDataInput({...dataInput, price: e.target.value})} 
                                 />
                             </div>
+                        </div>
+                        <div className='label-text'>
+                            <div>
+                                <label>UPDATE VOLUME:</label>
+                                <input
+                                type="number"
+                                value={inputValue}
+                                onChange={(e) => {
+                                    const newValue = e.target.value;
+                                    if(newValue === ''){
+                                        setInputValue('');
+                                    } else{
+                                        setInputValue(newValue);
+                                    }
+                                }}
+                                />
+                            </div>
+                            <span>
+                                = {dataInput.quantity + (inputValue ? Number(inputValue) : 0)}
+                            </span>
                         </div>
                         
                         <div style={{ position: 'relative' }}>

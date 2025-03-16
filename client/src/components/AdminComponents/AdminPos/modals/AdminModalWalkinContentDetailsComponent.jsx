@@ -134,13 +134,11 @@ function AdminModalWalkinContentDetailsComponent({isOpen, onClose, cartItems, se
         <Draggable>
             <div className='customer-modal-container'>
                 <div className='customer-modal-header'>
-                    <div className='shopping-cart-content'>
-                        <h2>Shopping Cart Walkin</h2>
-                        <div className='customer-modal-header-line'></div>
+                    <div className='cart-title'>
+                        <div className='cart-icon'>🛒</div>
+                        <h2>Shopping Cart</h2>
                     </div>
-                    <span className='customer-modal-close' onClick={onClose}>
-                        <img src={cancelIcon} alt='Close Icon' />
-                    </span>
+                    <button className='close-button' onClick={onClose}>×</button>
                 </div>
 
                 <div className='customer-modal-content'>
@@ -151,48 +149,29 @@ function AdminModalWalkinContentDetailsComponent({isOpen, onClose, cartItems, se
                             Array.isArray(cartItems) &&
                             cartItems.map((cartItem) =>
                                 cartItem.productId ? (
-                                    <div key={cartItem._id} className='customer-modal-content-group'>
-                                        <img
-                                            src={`${cartItem.productId.imageUrl}`}
-                                            alt=''
-                                            className='customer-modal-product-items'
-                                        />
-                                        <div className='customer-modal-product-items-content'>
-                                            <span>{cartItem.productId.productName}</span>
-
-                                            {/* dropdown for size options */}
-                                            {/* <select
-                                            className='size-select'
-                                            value={sizeSelection[cartItem._id] || ''}
-                                            onChange={(e) => handleSizeChange(cartItem._id, e.target.value)}
-                                            >
-                                                <option value='' disabled>
-                                                    {cartItem.productId.sizeUnit}
-                                                </option>
-                                                <option value={cartItem.productId.productSize}>
-                                                    {cartItem.productId.productSize}
-                                                </option>
-                                            </select> */}
+                                    <div key={cartItem._id} className='cart-item'>
+                                        <div className='product-image-container'>
+                                            <img src={`${cartItem.productId.imageUrl}`} alt="Product" className='product-image' />
+                                        </div>
+                                        <div className='product-details'>
+                                            <div className='product-name'>{cartItem.productId.productName}</div>
                                             <p style={{ fontSize: '12px' }}>{cartItem.productId.productSize}</p>
 
-                                            <p>
+                                            <div className='product-quantity'>
                                                 <input
                                                     type='number'
                                                     value={cartItem.quantity}
                                                     min='1'
                                                     onChange={(e) => handleQuantityChange(cartItem._id, parseInt(e.target.value))}
-                                                    className='input-quantity-update'
+                                                    className='quantity-input'
                                                 />
                                                 <span>X</span>
-                                                <span>{`₱ ${calculateFinalPriceModalAdmin(cartItem)}`}</span>
-                                            </p>
+                                                <span className='product-price'>{`₱ ${calculateFinalPriceModalAdmin(cartItem)}`}</span>
+                                            </div>
                                         </div>
-                                        <span
-                                        className='customer-modal-cancel-items'
-                                        onClick={() => handleCartItemDelete(cartItem._id)}
-                                        >
-                                            <img src={cancelIcon2} alt='Cancel Icon' />
-                                        </span>
+                                        <button className='remove-item-button' onClick={() => handleCartItemDelete(cartItem._id)}>
+                                            ×
+                                        </button>
                                     </div>
                                 ) : null
                             )
@@ -200,45 +179,44 @@ function AdminModalWalkinContentDetailsComponent({isOpen, onClose, cartItems, se
                     }
                 </div>
 
-                <div className='customer-modal-footer'>
-                    <div className='products-subtotal'>
-                        <span>Subtotal:</span>
-                        <span>₱ {calculateSubtotalModalAdmin(cartItems).rawSubtotal}</span>
+                <div className='cart-summary'>
+                    <div className='summary-row'>
+                        <span className='summary-label'>Subtotal:</span>
+                        <span className='summary-value'>₱{calculateSubtotalModalAdmin(cartItems).rawSubtotal}</span>
                     </div>
                     {
                         calculateSubtotalModalAdmin(cartItems).discountRate > 0 && (
-                            <div className='products-subtotal'>
-                                <span>Discount ({calculateSubtotalModalAdmin(cartItems).discountRate}%):</span>
-                                <span>- ₱ {calculateSubtotalModalAdmin(cartItems).discountAmount}</span>
+                            <div className='summary-row'>
+                                <span className='summary-label'>Discount ({calculateSubtotalModalAdmin(cartItems).discountRate}%):</span>
+                                <span className='summary-value'>- ₱{calculateSubtotalModalAdmin(cartItems).discountAmount}</span>
                             </div>
                         )
                     }
-                    <div className='products-subtotal'>
-                        <span>Total:</span>
-                        <span> ₱ {calculateSubtotalModalAdmin(cartItems).finalSubtotal}</span>
+                    <div className='summary-row'>
+                        <span className='summary-label'>Total:</span>
+                        <span className='summary-value'> ₱{calculateSubtotalModalAdmin(cartItems).finalSubtotal}</span>
                     </div>
-                    <div className='products-subtotal'>
-                        <span>Cash:</span>
+                    <div className='summary-row'>
+                        <span className='summary-label'>Cash:</span>
                         <input
                             type='number'
                             min='1'
                             value={cashReceived}
                             onChange={(e) => handleCashReceivedChange(e.target.value)}
+                            className='cash-input' 
+                            placeholder='Enter cash amount'
                         />
                     </div>
-                    <div className='products-subtotal'>
-                        <span>Change:</span>
-                        <span> ₱ {changeTotal.toFixed(2)}</span>
+                    <div className='summary-row'>
+                        <span className='summary-label'>Change:</span>
+                        <span className='summary-value' style={{ color: '#077A37' }}> ₱{changeTotal.toFixed(2)}</span>
                     </div>
                 </div>
 
-
-
-                <footer>
-                    <div>
-                        <button onClick={handleCheckout}>Checkout</button>
-                    </div>
-                </footer>
+                <div className='modal-footer'>
+                    <button className='close-btn' onClick={onClose}>Close</button>
+                    <button className='checkout-btn' onClick={handleCheckout}>Checkout</button>
+                </div>
             </div>
         </Draggable>
     </div>

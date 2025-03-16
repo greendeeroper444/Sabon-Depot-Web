@@ -10,7 +10,7 @@ const { getInventoryReport, getSalesReport } = require("../AdminControllers/Admi
 //create order via staff
 const addOrderRefillAdmin = async(req, res) => {
     try {
-        const {cashReceived, changeTotal} = req.body;
+        const {cashReceived, changeTotal, discountRate} = req.body;
         const token = req.cookies.token;
 
         if(!token){
@@ -43,8 +43,17 @@ const addOrderRefillAdmin = async(req, res) => {
                 });
             }
 
-            //calculate total amount
-            const totalAmount = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+            //calculate subtotal (without discount)
+            const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+            
+            //apply discount if provided
+            let discount = 0;
+            if(discountRate && !isNaN(discountRate) && discountRate > 0){
+                discount = (subtotal * discountRate) / 100;
+            }
+            
+            //calculate final total amount with discount applied
+            const totalAmount = subtotal - discount;
 
             //create the order
             const order = new StaffOrderRefillModel({
@@ -65,6 +74,9 @@ const addOrderRefillAdmin = async(req, res) => {
                     updatedProductBy: item.productId.updatedBy || '',
                     updatedProductAt: item.productId.updatedAt || new Date(),
                 })),
+                subtotal,
+                discountRate: discountRate || 0,
+                discountAmount: discount,
                 totalAmount,
                 cashReceived,
                 changeTotal,
@@ -73,36 +85,15 @@ const addOrderRefillAdmin = async(req, res) => {
 
             await order.save();
 
+            //rest of the function remains the same as before
             //update product quantities based on the order
             await Promise.all(cartItems.map(async (item) => {
                 await RefillProductModel.findByIdAndUpdate(item.productId._id, {
-                    $inc: {quantity: -item.quantity} //decrease product quantity
+                    $inc: {quantity: -parseFloat(item.quantity)} //decrease product quantity
                 });
-
 
                 const today = new Date();
                 today.setUTCHours(0, 0, 0, 0); //set time to midnight for the day field
-
-                //production report
-                const existingProductionReport = await ProductionReportModel.findOne({
-                    productId: item.productId._id,
-                    date: today,
-                });
-
-                if(existingProductionReport){
-                    await ProductionReportModel.updateOne(
-                        {_id: existingProductionReport._id},
-                        {$inc: {productionQuantity: item.quantity}}
-                    );
-                } else {
-                    await ProductionReportModel.create({
-                        productId: item.productId._id,
-                        productName: item.productId.productName,
-                        productionQuantity: item.quantity,
-                        date: today,
-                    });
-                }
-
 
                 //total sales
                 const existingRecord = await TotalSaleModel.findOne({
@@ -158,17 +149,6 @@ const addOrderRefillAdmin = async(req, res) => {
                     });
                 }
 
-
-                // await getInventoryReport(
-                //     item.productId._id,
-                //     item.productId.productName,
-                //     item.productId.sizeUnit,
-                //     item.productId.productSize,
-                //     item.productId.category,
-                //     item.quantity,
-                //     true
-                // );
-    
                 await getSalesReport(
                     item.productId._id,
                     item.productId.productName,
@@ -178,9 +158,7 @@ const addOrderRefillAdmin = async(req, res) => {
                     item.quantity,
                     'refill'
                 );
-
             }));
-    
 
             //clear the cart
             await StaffCartRefillModel.deleteMany({adminId});
@@ -198,6 +176,7 @@ const addOrderRefillAdmin = async(req, res) => {
         });
     }
 };
+
 
 
 const getOrderRefillAdmin = async(req, res) => {

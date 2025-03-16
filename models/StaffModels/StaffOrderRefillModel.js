@@ -43,6 +43,18 @@ const StaffOrderRefillSchema = new mongoose.Schema({
             updatedProductAt: Date,
         },
     ],
+    subtotal: { 
+        type: Number, 
+        required: true 
+    },
+    discountRate: { 
+        type: Number, 
+        default: 0 
+    },
+    discountAmount: { 
+        type: Number, 
+        default: 0 
+    },
     totalAmount: {
         type: Number,
         required: true,

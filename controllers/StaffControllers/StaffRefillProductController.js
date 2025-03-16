@@ -1,12 +1,14 @@
 const StaffAuthModel = require("../../models/StaffModels/StaffAuthModel");
 const RefillProductModel = require("../../models/RefillProductModel");
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { getInventoryReport } = require("../AdminControllers/AdminReportController");
+const ProductionReportModel = require("../../models/ProductionReportModel");
 
 const addRefillProductStaff = async(req, res) => {
     try {
-        const {productName, category, drum, color} = req.body;
+        const {productCode, productName, category, quantity, price, color} = req.body;
 
-        if(!productName || !category || !drum || !color){
+        if(!productCode || !productName || !category || !quantity || !price || !color){
             return res.json({
                 error: 'Please provide all required fields'
             });
@@ -34,17 +36,60 @@ const addRefillProductStaff = async(req, res) => {
                 });
             }
 
+            const productSize = `${quantity}L`;
+
             //create new product with the determined batch
             const newRefillProduct = await RefillProductModel.create({
+                productCode,
                 productName,
                 category,
-                drum,
+                quantity,
+                price,
                 color,
+                productSize,
                 uploaderId: staffId,
                 uploaderType: 'Staff',
                 createdBy: staffExists.fullName,
             });
+
+            //get today's date and strip time components for date-only comparison
+            const today = new Date();
+            const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+
+            //check if there's already a production report for today (date-only comparison)
+            const existingProductionReport = await ProductionReportModel.findOne({
+                date: {
+                    $gte: startOfDay,
+                    $lte: endOfDay
+                }
+            });
+
+            if(existingProductionReport){
+                //update existing report by adding the new quantity
+                await ProductionReportModel.updateOne(
+                    {_id: existingProductionReport._id},
+                    {$inc: {productionQuantity: parseInt(quantity)}}
+                );
+            } else{
+                //create new report for today
+                await ProductionReportModel.create({
+                    productId: newRefillProduct._id,
+                    productName: productName,
+                    productionQuantity: parseInt(quantity),
+                    date: startOfDay,
+                });
+            }
             
+            await getInventoryReport(
+                newRefillProduct._id,
+                newRefillProduct.productName,
+                newRefillProduct.sizeUnit,
+                newRefillProduct.productSize,
+                newRefillProduct.category,
+                newRefillProduct.quantity,
+                true
+            );
 
             return res.json({
                 message: 'Refill product added successfully!',
@@ -74,9 +119,9 @@ const getRefillProductStaff = async(req, res) => {
 const editRefillProductStaff = async(req, res) => {
     try {
         const {productId} = req.params;
-        const {productName, category, drum, color} = req.body;
+        const {productCode, productName, category, quantity, price, color} = req.body;
 
-        if(!productName || !category || !drum || !color){
+        if(!productCode || !productName || !category || !quantity || !price || !color){
             return res.json({
                 error: 'Please provide all required fields',
             });
@@ -104,9 +149,11 @@ const editRefillProductStaff = async(req, res) => {
                 });
             }
 
+            const productSize = `${quantity}L`;
+
             const updatedProduct = await RefillProductModel.findByIdAndUpdate(
                 productId,
-                {productName, category, drum, color},
+                {productCode, productName, category, quantity, price, color, productSize},
                 {new: true}
             );
 

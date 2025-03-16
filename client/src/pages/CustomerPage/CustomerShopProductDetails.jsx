@@ -10,8 +10,8 @@ import { CustomerContext } from '../../../contexts/CustomerContexts/CustomerAuth
 import UseFetchProductDetailsHook from '../../hooks/CustomerHooks/UseFetchProductDetailsHook';
 import UseCartHook from '../../hooks/CustomerHooks/UseCartHook';
 import calculateFinalPriceUtils from '../../utils/CalculateFinalPriceUtils';
-import CalculateFinalPriceUtils from '../../utils/StaffCalculateFinalPriceUtils';
 import toast from 'react-hot-toast';
+import formatDescription from '../../utils/FormatDescription';
 
 
 const getDaysLeftMessage = (discountedDate) => {
@@ -224,7 +224,7 @@ function CustomerShopProductDetails() {
 
                             <div className='customer-shop-product-details-content-right-header'>
                                 <h1>{`${product.productName} (${product.productSize})`}</h1>
-                                <p>{product.description}</p>
+                                <p>{formatDescription(product.description)}</p>
                                 {/* <h4>{product.productSize}</h4> */}
                                 <div className='price-container'>
                                 {

@@ -7,6 +7,7 @@ import { ChromePicker } from 'react-color';
 function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProducts}) {
     const [categories, setCategories] = useState([]);
     const [dataInput, setDataInput] = useState({
+        productCode: '',
         productName: '', 
         category: '', 
         quantity: '', 
@@ -56,9 +57,9 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
 
     const handleAddProductAdmin = async (e) => {
         e.preventDefault();
-        const {productName, category, quantity, price, color} = dataInput;
+        const {productCode, productName, category, quantity, price, color} = dataInput;
     
-        if(!productName || !category || !price || !quantity){
+        if(!productCode || !productName || !category || !price || !quantity){
             toast.error('Please input all fields');
             return;
         }
@@ -68,7 +69,7 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
         //     return;
         // }
 
-        const productData = {productName, category, quantity, price, color};
+        const productData = {productCode, productName, category, quantity, price, color};
     
         try {
             const response = await axios.post('/adminRefillProduct/addRefillProductAdmin', productData, {
@@ -81,6 +82,7 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
                 toast.error(response.data.error);
             } else {
                 setDataInput({ 
+                    productCode: '',
                     productName: '', 
                     category: '', 
                     quantity: '', 
@@ -110,6 +112,15 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
                         <label htmlFor="">Product Information</label>
                     </div>
                     <div className='admin-modal-products-add-inputs'>
+                        <div className='label-text'>
+                            <div>
+                                <label>PRODUCT CODE:</label>
+                                <input type="text"
+                                value={dataInput.productCode} 
+                                onChange={(e) => setDataInput({...dataInput, productCode: e.target.value})}
+                                />
+                            </div>
+                        </div>
                         <div className='label-text'>
                             <div>
                                 <label>PRODUCT NAME:</label>

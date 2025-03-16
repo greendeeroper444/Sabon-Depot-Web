@@ -74,15 +74,14 @@ const updateProductVolumeRefillAdmin = async(req, res) => {
         });
     }
 
-    if(!quantity || quantity < 1){
+    if(!quantity || quantity <= 0){
         return res.status(400).json({ 
             success: false,
-             message: 'Volume must be at least 1' 
+             message: 'Volume must be greater than 0' 
             });
     }
 
     try {
-        console.log('Update Request:', req.body);
 
         const cartItem = await StaffCartRefillModel.findById(cartItemId);
         if(!cartItem){
@@ -99,22 +98,9 @@ const updateProductVolumeRefillAdmin = async(req, res) => {
             });
         }
 
-        const productSize = `${quantity}${sizeUnit}`;
-        
-        const previousQuantity = cartItem.quantity || 0;
-        const quantityDifference = quantity - previousQuantity;
-
-        if(quantityDifference > product.quantity){
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Not enough stock available' 
-            });
-        }
-
-        product.quantity -= quantityDifference;
-        await product.save();
-
-        cartItem.quantity = quantity;
+        const productSize = `${quantity}L`;
+       
+        cartItem.quantity = parseFloat(quantity);
         cartItem.productSize = productSize;
         cartItem.sizeUnit = sizeUnit;
         cartItem.updatedAt = new Date();
@@ -223,32 +209,29 @@ const removeProductFromCartRefillAdmin = async(req, res) => {
     const token = req.cookies.token;
 
     if(!token){
-        return res.json({ error: 'Unauthorized - Missing token' });
+        return res.json({ 
+            error: 'Unauthorized - Missing token' 
+        });
     }
 
     jwt.verify(token, process.env.JWT_SECRET, {}, async(err, decodedToken) => {
         if(err){
-            return res.json({ error: 'Unauthorized - Invalid token' });
+            return res.json({ 
+                error: 'Unauthorized - Invalid token' 
+            });
         }
 
         try {
-            const cartItem = await StaffCartRefillModel.findById(cartItemId);
-            if (!cartItem) {
-                return res.status(404).json({ success: false, message: 'Cart item not found' });
-            }
-
-            const product = await RefillProductModel.findById(cartItem.productId);
-            if (product) {
-                product.quantity += cartItem.quantity; 
-                await product.save();
-            }
-
             await StaffCartRefillModel.findByIdAndDelete(cartItemId);
-
-            res.json({ success: true, message: 'Product removed from cart, stock restored' });
+            res.json({ 
+                success: true,
+                message: 'Product removed from cart' 
+            });
         } catch (error) {
             console.log(error);
-            return res.status(500).json({ message: 'Server error' });
+            return res.status(500).json({ 
+                message: 'Server error' 
+            });
         }
     });
 };

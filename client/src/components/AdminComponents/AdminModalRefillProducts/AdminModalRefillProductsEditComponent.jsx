@@ -7,6 +7,7 @@ import { ChromePicker, TwitterPicker } from 'react-color';
 function AdminModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProducts, selectedProduct}) {
     const [categories, setCategories] = useState([]);
     const [dataInput, setDataInput] = useState({
+        productCode: '',
         productName: '', 
         category: '', 
         price: '', 
@@ -19,6 +20,7 @@ function AdminModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
     useEffect(() => {
         if (selectedProduct) {
             setDataInput({
+                productCode: selectedProduct.productCode || '',
                 productName: selectedProduct.productName || '',
                 category: selectedProduct.category || '',
                 price: selectedProduct.price || '',
@@ -69,11 +71,11 @@ function AdminModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
     const handleEditProductAdmin = async(e) => {
         e.preventDefault();
 
-        const {productName, category, price, quantity, color} = dataInput;
+        const {productCode, productName, category, price, quantity, color} = dataInput;
 
         const updatedVolume = parseInt(dataInput.quantity) + parseInt(inputValue);
     
-        if(!productName || !category || !price || !quantity){
+        if(!productCode || !productName || !category || !price || !quantity){
             toast.error('Please input all fields');
             return;
         }
@@ -86,6 +88,7 @@ function AdminModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
     
         try {
             const response = await axios.put(`/adminRefillProduct/editRefillProductAdmin/${selectedProduct._id}`, {
+                productCode,
                 productName,
                 category,
                 price,
@@ -121,6 +124,15 @@ function AdminModalRefillProductsEditComponent({isOpen, onClose, fetchRefillProd
                         <label htmlFor="">Product Information</label>
                     </div>
                     <div className='admin-modal-products-add-inputs'>
+                        <div className='label-text'>
+                            <div>
+                                <label>PRODUCT CODE:</label>
+                                <input type="text"
+                                value={dataInput.productCode} 
+                                onChange={(e) => setDataInput({...dataInput, productCode: e.target.value})}
+                                />
+                            </div>
+                        </div>
                         <div className='label-text'>
                             <div>
                                 <label>PRODUCT NAME:</label>

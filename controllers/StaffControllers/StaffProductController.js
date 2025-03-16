@@ -8,6 +8,7 @@ const { getInventoryReport } = require('../AdminControllers/AdminReportControlle
 const mongoose = require('mongoose');
 const WorkinProgressProductModel = require('../../models/WorkinProgressProductModel');
 const upload = require('../../helpers/MulterConfig');
+const ProductionReportModel = require('../../models/ProductionReportModel');
 
 const uploadProductStaff = async(req, res) => {
     upload(req, res, async (err) => {
@@ -109,6 +110,35 @@ const uploadProductStaff = async(req, res) => {
                     createdBy: staffExists.fullName,
                     batch,
                 });
+
+                //get today's date and strip time components for date-only comparison
+                const today = new Date();
+                const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+
+                //check if there's already a production report for today (date-only comparison)
+                const existingProductionReport = await ProductionReportModel.findOne({
+                    date: {
+                        $gte: startOfDay,
+                        $lte: endOfDay
+                    }
+                });
+
+                if(existingProductionReport){
+                    //update existing report by adding the new quantity
+                    await ProductionReportModel.updateOne(
+                        {_id: existingProductionReport._id},
+                        {$inc: {productionQuantity: parseInt(quantity)}}
+                    );
+                } else{
+                    //create new report for today
+                    await ProductionReportModel.create({
+                        productId: newProduct._id,
+                        productName: productName,
+                        productionQuantity: parseInt(quantity),
+                        date: startOfDay,
+                    });
+                }
                 
                 await getInventoryReport(
                     newProduct._id,

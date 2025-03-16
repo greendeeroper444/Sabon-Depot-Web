@@ -106,27 +106,6 @@ const addOrderWalkinStaff = async(req, res) => {
                 const today = new Date();
                 today.setUTCHours(0, 0, 0, 0); //set time to midnight for the day field
 
-                //production report
-                const existingProductionReport = await ProductionReportModel.findOne({
-                    productId: item.productId._id,
-                    date: today,
-                });
-
-                if(existingProductionReport){
-                    await ProductionReportModel.updateOne(
-                        {_id: existingProductionReport._id},
-                        {$inc: {productionQuantity: item.quantity}}
-                    );
-                } else {
-                    await ProductionReportModel.create({
-                        productId: item.productId._id,
-                        productName: item.productId.productName,
-                        productionQuantity: item.quantity,
-                        date: today,
-                    });
-                }
-
-
                 //total sales
                 const existingRecord = await TotalSaleModel.findOne({
                     productName: item.productId.productName,

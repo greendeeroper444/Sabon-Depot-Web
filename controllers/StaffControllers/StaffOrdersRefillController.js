@@ -1,17 +1,16 @@
 const StaffAuthModel = require("../../models/StaffModels/StaffAuthModel");
 const jwt = require('jsonwebtoken');
 const StaffCartRefillModel = require("../../models/StaffModels/StaffCartRefillModel");
-const ProductModel = require("../../models/ProductModel");
+const RefillProductModel = require("../../models/RefillProductModel");
+const StaffOrderRefillModel = require("../../models/StaffModels/StaffOrderRefillModel");
 const { BestSellingModel, TotalSaleModel } = require("../../models/SalesOverviewModel");
 const ProductionReportModel = require("../../models/ProductionReportModel");
 const { getInventoryReport, getSalesReport } = require("../AdminControllers/AdminReportController");
-const StaffOrderRefillModel = require("../../models/StaffModels/StaffOrderRefillModel");
-const RefillProductModel = require("../../models/RefillProductModel");
 
 //create order via staff
 const addOrderRefillStaff = async(req, res) => {
     try {
-        const {cashReceived, changeTotal} = req.body;
+        const {cashReceived, changeTotal, discountRate} = req.body;
         const token = req.cookies.token;
 
         if(!token){
@@ -44,8 +43,17 @@ const addOrderRefillStaff = async(req, res) => {
                 });
             }
 
-            //calculate total amount
-            const totalAmount = cartItems.reduce((acc, item) => acc + item.price * item.volume, 0);
+            //calculate subtotal (without discount)
+            const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+            
+            //apply discount if provided
+            let discount = 0;
+            if(discountRate && !isNaN(discountRate) && discountRate > 0){
+                discount = (subtotal * discountRate) / 100;
+            }
+            
+            //calculate final total amount with discount applied
+            const totalAmount = subtotal - discount;
 
             //create the order
             const order = new StaffOrderRefillModel({
@@ -55,8 +63,8 @@ const addOrderRefillStaff = async(req, res) => {
                     productName: item.productName,
                     category: item.productId.category || '',
                     price: item.price,
-                    finalPrice: item.price * item.volume,
-                    volume: item.volume,
+                    finalPrice: item.price * item.quantity,
+                    quantity: item.quantity,
                     uploaderId: item.productId.uploaderId,
                     uploaderType: item.productId.uploaderType,
                     sizeUnit: item.sizeUnit,
@@ -66,6 +74,9 @@ const addOrderRefillStaff = async(req, res) => {
                     updatedProductBy: item.productId.updatedBy || '',
                     updatedProductAt: item.productId.updatedAt || new Date(),
                 })),
+                subtotal,
+                discountRate: discountRate || 0,
+                discountAmount: discount,
                 totalAmount,
                 cashReceived,
                 changeTotal,
@@ -74,16 +85,80 @@ const addOrderRefillStaff = async(req, res) => {
 
             await order.save();
 
-            //update stock for each ordered product
-            await Promise.all(
-                cartItems.map(async(item) => {
-                    const product = await RefillProductModel.findById(item.productId._id);
-                    if(product){
-                        product.volume -= item.volume; //deduct the ordered quantity
-                        await product.save();
-                    }
-                })
-            );
+            //rest of the function remains the same as before
+            //update product quantities based on the order
+            await Promise.all(cartItems.map(async (item) => {
+                await RefillProductModel.findByIdAndUpdate(item.productId._id, {
+                    $inc: {quantity: -parseFloat(item.quantity)} //decrease product quantity
+                });
+
+                const today = new Date();
+                today.setUTCHours(0, 0, 0, 0); //set time to midnight for the day field
+
+                //total sales
+                const existingRecord = await TotalSaleModel.findOne({
+                    productName: item.productId.productName,
+                    day: today,
+                });
+
+                if(existingRecord){
+                    //update existing record
+                    await TotalSaleModel.updateOne(
+                        {_id: existingRecord._id},
+                        {
+                            $inc: {
+                                totalProduct: 1,
+                                totalSales: item.productId.price * item.quantity,
+                                quantitySold: item.quantity,
+                            },
+                        }
+                    );
+                } else{
+                    //create a new record
+                    await TotalSaleModel.create({
+                        productName: item.productId.productName,
+                        totalProduct: 1,
+                        price: item.productId.price,
+                        totalSales: item.productId.price * item.quantity,
+                        quantitySold: item.quantity,
+                        day: today,
+                    });
+                }
+
+                //get all best selling
+                //update bestSellingRecord model
+                const bestSellingRecord = await BestSellingModel.findOne({productId: item.productId._id});
+                if(bestSellingRecord){
+                    //update existing record
+                    bestSellingRecord.totalProduct += 1;
+                    bestSellingRecord.totalSales += item.price * item.quantity;
+                    bestSellingRecord.quantitySold += item.quantity;
+                    bestSellingRecord.lastSoldAt = Date.now();
+                    await bestSellingRecord.save();
+                } else{
+                    //create a new record
+                    await BestSellingModel.create({
+                        productId: item.productId._id,
+                        productName: item.productId.productName,
+                        price: item.productId.price,
+                        totalSales: item.price * item.quantity,
+                        quantitySold: item.quantity,
+                        sizeUnit: item.productId.sizeUnit,
+                        productSize: item.productId.productSize,
+                        lastSoldAt: Date.now(),
+                    });
+                }
+
+                await getSalesReport(
+                    item.productId._id,
+                    item.productId.productName,
+                    item.productId.sizeUnit,
+                    item.productId.category,
+                    item.productId.price,
+                    item.quantity,
+                    'refill'
+                );
+            }));
 
             //clear the cart
             await StaffCartRefillModel.deleteMany({staffId});
@@ -96,7 +171,9 @@ const addOrderRefillStaff = async(req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ 
+            message: 'Server error' 
+        });
     }
 };
 
@@ -151,9 +228,9 @@ const getAllOrderRefillStaff = async(req, res) => {
 const updateOrderRefillStaff = async(req, res) => {
     try {
         const {orderId} = req.params;
-        const {productCode, productName, category, quantity} = req.body;
+        const {productName, category, quantity} = req.body;
 
-        if(!productCode || !productName || !category || !quantity){
+        if(!productName || !category || !quantity){
             return res.json({
                 error: 'Please provide all required fields'
             });
@@ -167,7 +244,7 @@ const updateOrderRefillStaff = async(req, res) => {
         }
 
         //eemove ownership check
-        order.productCode = productCode;
+        // order.productCode = productCode;
         order.productName = productName;
         order.category = category;
         order.quantity = quantity;

@@ -5,7 +5,7 @@ const RefillProductModel = require("../../models/RefillProductModel");
 const mongoose = require('mongoose')
 
 const addProductToCartRefillStaff = async(req, res) => {
-    const {productId, volume, sizeUnit} = req.body;
+    const {productId, quantity, price} = req.body;
     const token = req.cookies.token;
 
     if(!token){
@@ -37,57 +37,19 @@ const addProductToCartRefillStaff = async(req, res) => {
                 });
             }
 
-            //convert volume based on selected unit
-            let convertedVolume = volume;
-            if(sizeUnit === 'Milliliter'){
-                convertedVolume = volume / 1000; //convert ml to L
-            } else if(sizeUnit === 'Gallon'){
-                convertedVolume = volume * 3.785; //convert Gallon to L
-            }
+            const productSize = `${quantity}L`;
 
-            //check stock availability
-            if(product.volume < convertedVolume){
-                return res.status(400).json({ 
-                    error: 'Not enough stock available' 
-                });
-            }
+            await new StaffCartRefillModel({
+                staffId,
+                productId,
+                productName: product.productName,
+                quantity,
+                price: product.price,
+                sizeUnit: product.sizeUnit,
+                productSize
+            }).save();
 
-            const price = product.price;
-            let existingCartItem = await StaffCartRefillModel.findOne({staffId, productId});
-
-            let unit = sizeUnit || 'Liter';
-            let productSize = `${volume}${unit === 'Liter' ? 'L' : unit === 'Milliliter' ? 'ml' : 'Gal'}`;
             
-            if(existingCartItem){
-                //ensure stock is enough for new total volume
-                if(product.volume < convertedVolume + existingCartItem.volume){
-                    return res.status(400).json({ 
-                        error: 'Not enough stock available' 
-                    });
-                }
-
-                //update existing cart item
-                existingCartItem.volume += convertedVolume;
-                existingCartItem.productSize = `${existingCartItem.volume}${sizeUnit === 'Liter' ? 'L' : sizeUnit === 'Milliliter' ? 'ml' : 'Gal'}`;
-                existingCartItem.updatedAt = Date.now();
-                await existingCartItem.save();
-            } else {
-                await new StaffCartRefillModel({
-                    staffId,
-                    productId,
-                    volume: convertedVolume,
-                    price,
-                    productName: product.productName,
-                    productSizeLiter: product.volume,
-                    sizeUnit: sizeUnit,
-                    productSize: productSize, 
-                }).save();
-            }
-
-            //deduct volume from product stock
-            product.volume -= convertedVolume;
-            await product.save();
-
             const updatedCart = await StaffCartRefillModel.find({staffId}).populate('productId');
             res.json(updatedCart);
         } catch (error) {
@@ -104,7 +66,7 @@ const addProductToCartRefillStaff = async(req, res) => {
 
 
 const updateProductVolumeRefillStaff = async(req, res) => {
-    const {cartItemId, volume, sizeUnit} = req.body;
+    const {cartItemId, quantity, sizeUnit} = req.body;
 
     if(!cartItemId || !mongoose.Types.ObjectId.isValid(cartItemId)){
         return res.status(400).json({ 
@@ -112,15 +74,14 @@ const updateProductVolumeRefillStaff = async(req, res) => {
         });
     }
 
-    if(!volume || volume < 1){
+    if(!quantity || quantity <= 0){
         return res.status(400).json({ 
             success: false,
-             message: 'Volume must be at least 1' 
+             message: 'Volume must be greater than 0' 
             });
     }
 
     try {
-        console.log('Update Request:', req.body);
 
         const cartItem = await StaffCartRefillModel.findById(cartItemId);
         if(!cartItem){
@@ -137,33 +98,9 @@ const updateProductVolumeRefillStaff = async(req, res) => {
             });
         }
 
-        //convert volume based on sizeUnit
-        let convertedVolume = volume;
-        let productSize = `${volume}${sizeUnit === 'Mililiter' ? 'ml' : sizeUnit === 'Gallon' ? 'gal' : 'L'}`;
-
-        if(sizeUnit === 'Mililiter'){
-            convertedVolume = volume / 1000;
-        } else if(sizeUnit === 'Gallon'){
-            convertedVolume = volume * 3.785;
-        }
-
-        const previousVolume = cartItem.volume || 0;
-        const volumeDifference = convertedVolume - previousVolume;
-
-        //check if enough stock is available
-        if(volumeDifference > product.volume){
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Not enough stock available' 
-            });
-        }
-
-        //update product stock
-        product.volume -= volumeDifference;
-        await product.save();
-
-        //update cart item
-        cartItem.volume = convertedVolume;
+        const productSize = `${quantity}L`;
+       
+        cartItem.quantity = parseFloat(quantity);
         cartItem.productSize = productSize;
         cartItem.sizeUnit = sizeUnit;
         cartItem.updatedAt = new Date();
@@ -272,33 +209,23 @@ const removeProductFromCartRefillStaff = async(req, res) => {
     const token = req.cookies.token;
 
     if(!token){
-        return res.json({ error: 'Unauthorized - Missing token' });
+        return res.json({ 
+            error: 'Unauthorized - Missing token' 
+        });
     }
 
     jwt.verify(token, process.env.JWT_SECRET, {}, async(err, decodedToken) => {
         if(err){
-            return res.json({error: 'Unauthorized - Invalid token'});
+            return res.json({ 
+                error: 'Unauthorized - Invalid token' 
+            });
         }
 
         try {
-            const cartItem = await StaffCartRefillModel.findById(cartItemId);
-            if(!cartItem){
-                return res.status(404).json({ 
-                    success: false, message: 'Cart item not found' 
-                });
-            }
-
-            const product = await RefillProductModel.findById(cartItem.productId);
-            if(product){
-                product.volume += cartItem.volume;
-                await product.save();
-            }
-
             await StaffCartRefillModel.findByIdAndDelete(cartItemId);
-
             res.json({ 
-                success: true, 
-                message: 'Product removed from cart, stock restored' 
+                success: true,
+                message: 'Product removed from cart' 
             });
         } catch (error) {
             console.log(error);

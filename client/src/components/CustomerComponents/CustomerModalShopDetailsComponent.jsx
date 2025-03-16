@@ -48,7 +48,6 @@ function CustomerModalShopDetailsComponent({isOpen, onClose, cartItems, setCartI
         try {
             const response = await axios.delete(`/customerCart/removeProductFromCartCustomer/${cartItemId}`);
             if(response.data.success){
-                // toast.success(response.data.message);
                 fetchCartItems();
             } else{
                 throw new Error('Failed to delete product from cart');
@@ -71,7 +70,6 @@ function CustomerModalShopDetailsComponent({isOpen, onClose, cartItems, setCartI
         }
     };
     
-
     const handleCartNavigation = () => {
         navigate(`/cart/${customerId}`);
     };
@@ -82,7 +80,6 @@ function CustomerModalShopDetailsComponent({isOpen, onClose, cartItems, setCartI
         }
     }, [isOpen, customerId]);
 
-
     if(!isOpen) return null;
 
   return (
@@ -90,70 +87,76 @@ function CustomerModalShopDetailsComponent({isOpen, onClose, cartItems, setCartI
         <Draggable>
             <div className='customer-modal-container'>
                 <div className='customer-modal-header'>
-                    <div className='shopping-cart-content'>
+                    <div className='cart-title'>
+                        <div className='cart-icon'>🛒</div>
                         <h2>Shopping Cart</h2>
-                        <div className='customer-modal-header-line'></div>
                     </div>
-                    <span className='customer-modal-close' onClick={onClose}>
-                        <img src={cancelIcon} alt="Close Icon" />
-                    </span>
+                    <button className='close-button' onClick={onClose}>×</button>
                 </div>
 
                 <div className='customer-modal-content'>
-                     {
+                    {
                         Array.isArray(cartItems) && cartItems.length === 0 ? (
                             <div className='no-items-message'>No items in this cart</div>
                         ) : (
                             Array.isArray(cartItems) && cartItems.map((cartItem) => (
-                                <div key={cartItem._id} className='customer-modal-content-group'>
-                                    <img src={`${cartItem.productId.imageUrl}`} alt="" className='customer-modal-product-items' />
-                                    <div className='customer-modal-product-items-content'>
-                                        <span>{cartItem.productId.productName}</span>
-                                        <p>
-                                            <input
-                                            type='number'
-                                            value={cartItem.quantity}
-                                            min='1'
-                                            onChange={(e) => handleQuantityChange(cartItem._id, parseInt(e.target.value))}
-                                            className='input-quantity-update'
-                                            />
-                                            <span>X</span> 
-                                            <span>{`₱ ${calculateFinalPriceModal(cartItem).toFixed(2)}`}</span>
-                                            {/* <span>=</span>
-                                            <span>{`₱ ${(item.productId.price * item.quantity).toFixed(2)}`}</span> */}
-                                        </p>
+                                <div key={cartItem._id} className='cart-item'>
+                                    <div className='product-image-container'>
+                                        <img src={`${cartItem.productId.imageUrl}`} alt="Product" className='product-image' />
                                     </div>
-                                    <span className='customer-modal-cancel-items' onClick={() => handleCartItemDelete(cartItem._id)}>
-                                        <img src={cancelIcon2} alt="Cancel Icon" />
-                                    </span>
+                                    <div className='product-details'>
+                                        <div className='product-name'>{cartItem.productId.productName}</div>
+                                        <div className='product-quantity'>
+                                            <input
+                                                type='number'
+                                                value={cartItem.quantity}
+                                                min='1'
+                                                onChange={(e) => handleQuantityChange(cartItem._id, parseInt(e.target.value))}
+                                                className='quantity-input'
+                                            />
+                                            <span>×</span> 
+                                            <span className='product-price'>{`₱${calculateFinalPriceModal(cartItem).toFixed(2)}`}</span>
+                                        </div>
+                                    </div>
+                                    <button className='remove-item-button' onClick={() => handleCartItemDelete(cartItem._id)}>
+                                        ×
+                                    </button>
                                 </div>
                             ))
                         )
                     }
                 </div>
 
-                <div className='customer-modal-footer'>
-                <div className="products-subtotal">
-                    <span>Subtotal</span>
-                    <span>{`₱ ${calculateSubtotalModalCustomer(cartItems, customer)}`}</span>
-
-                </div>
-
-                </div>
-
-                <footer>
-                    <div>
-                        <button onClick={handleCartNavigation}>Cart</button>
-                        <button onClick={handleCheckout}>Checkout</button>
+                <div className='cart-summary'>
+                    <div className='summary-row'>
+                        <span className='summary-label'>Subtotal:</span>
+                        <span className='summary-value'>{`₱${calculateSubtotalModalCustomer(cartItems, customer)}`}</span>
                     </div>
-                </footer>
+                    <div className='summary-row'>
+                        <span className='summary-label'>Total:</span>
+                        <span className='summary-value'>{`₱${calculateSubtotalModalCustomer(cartItems, customer)}`}</span>
+                    </div>
+                    {/* <div className='summary-row'>
+                        <span className='summary-label'>Cash:</span>
+                        <input type="text" className='cash-input' placeholder="Enter cash amount" />
+                    </div>
+                    <div className='summary-row'>
+                        <span className='summary-label'>Change:</span>
+                        <span className='summary-value'>₱ 0.00</span>
+                    </div> */}
+                </div>
+
+                <div className='modal-footer'>
+                    <button className='close-btn' onClick={onClose}>Close</button>
+                    <button className='checkout-btn' onClick={handleCheckout}>Checkout</button>
+                </div>
             </div>
         </Draggable>
     </div>
   )
 }
 
-//define props tyoe for  the component
+//define props type for the component
 CustomerModalShopDetailsComponent.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
@@ -170,6 +173,6 @@ CustomerModalShopDetailsComponent.propTypes = {
     })).isRequired,
     setCartItems: PropTypes.func.isRequired,
     customerId: PropTypes.string.isRequired,
-};
+}
 
 export default CustomerModalShopDetailsComponent

@@ -11,7 +11,7 @@ function StaffDirectOrdersRefillContentComponent({
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    //filter products based on selected sizeUnit and maximumSizeLiter
+    //filter products based on selected sizeUnit and quantity
     const filteredRefillProducts = refillProducts.filter(product => {
         const categoryMatches = selectedCategory ? product.category === selectedCategory : true;
         return categoryMatches;
@@ -40,7 +40,7 @@ function StaffDirectOrdersRefillContentComponent({
                 <ul className='refill-product-list'>
                     {
                         paginatedProducts.map((product) => {
-                            const waterLevel = (product.volume / product.maximumSizeLiter) * 100;
+                            const waterLevel = (product.quantity / product.quantity) * 100;
 
                             return (
                                 <li className='refill-product-item' key={product._id}>
@@ -51,7 +51,7 @@ function StaffDirectOrdersRefillContentComponent({
                                         ></div>
                                     </div>
                                     <p>
-                                        {product.productName} - {product.volume}L
+                                        {product.productName} - {product.quantity}L
                                     </p>
                                     <div className='view-details'>
                                         <Link onClick={() => onAddToCart(product._id)}>Refill</Link>
