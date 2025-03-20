@@ -103,7 +103,7 @@
     border-color: #077A37;
 }
   
-  /* Batch Filters */
+  /* batch filters */
 .admin-promotions-container .batch-filters{
     display: flex;
     gap: 8px;
@@ -393,73 +393,73 @@
   
   /* Responsive Styles */
   @media (max-width: 992px){
-  .admin-promotions-container .admin-promotions-header{
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 16px;
-}
-    
-  .admin-promotions-container .admin-promotions-stats{
-      width: 100%;
-}
-    
-  .admin-promotions-container .stat-item{
-      flex: 1;
-}
+    .admin-promotions-container .admin-promotions-header{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+        
+    .admin-promotions-container .admin-promotions-stats{
+        width: 100%;
+    }
+        
+    .admin-promotions-container .stat-item{
+        flex: 1;
+    }
 }
   
   @media (max-width: 768px){
   .admin-promotions-container .admin-promotions-container{
-      padding: 16px;
-}
-    
-  .admin-promotions-container .admin-promotions-filters{
-      flex-direction: column;
-      align-items: stretch;
-}
-    
-  .admin-promotions-container .search-container{
-      max-width: none;
-}
-    
-  .admin-promotions-container .filters-right{
-      justify-content: space-between;
-}
-    
-  .admin-promotions-container .admin-promotions-table th,
-  .admin-promotions-container .admin-promotions-table td{
-      padding: 12px 10px;
-}
-    
-  .admin-promotions-container .product-image-container{
-      width: 48px;
-      height: 48px;
-}
+        padding: 16px;
+    }
+        
+    .admin-promotions-container .admin-promotions-filters{
+        flex-direction: column;
+        align-items: stretch;
+    }
+        
+    .admin-promotions-container .search-container{
+        max-width: none;
+    }
+        
+    .admin-promotions-container .filters-right{
+        justify-content: space-between;
+    }
+        
+    .admin-promotions-container .admin-promotions-table th,
+    .admin-promotions-container .admin-promotions-table td{
+        padding: 12px 10px;
+    }
+        
+    .admin-promotions-container .product-image-container{
+        width: 48px;
+        height: 48px;
+    }
 }
   
   @media (max-width: 576px){
   .admin-promotions-container .admin-promotions-stats{
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
-}
-    
-  .admin-promotions-container .stat-item{
-      width: 100%;
-      flex-direction: row;
-      justify-content: space-between;
-}
-    
-  .admin-promotions-container .action-button span{
-      display: none;
-}
-    
-  .admin-promotions-container .action-button{
-      padding: 8px;
-}
-    
-  .admin-promotions-container .batch-filters{
-      padding-bottom: 12px;
-      margin-bottom: 16px;
-}
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+        
+    .admin-promotions-container .stat-item{
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+        
+    .admin-promotions-container .action-button span{
+        display: none;
+    }
+        
+    .admin-promotions-container .action-button{
+        padding: 8px;
+    }
+        
+    .admin-promotions-container .batch-filters{
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
 }

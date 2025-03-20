@@ -176,3 +176,34 @@
     color: grey;
     cursor: pointer;
 }
+
+/* batch filters */
+.staff-products-container .batch-filters{
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e9ecef;
+}
+  
+.staff-products-container .batch-button{
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    background-color: #f1f3f5;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+  
+.staff-products-container .batch-button:hover{
+    background-color: #e9ecef;
+}
+  
+.staff-products-container .batch-button.active{
+    background-color: #077A37;
+    color: white;
+    border-color: #077A37;
+}

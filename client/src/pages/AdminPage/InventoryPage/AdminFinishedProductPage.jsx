@@ -270,11 +270,10 @@ function AdminFinishedProductPage() {
 
         </div>
 
-        <div>
+        {/* <div>
             {
                 batches.length > 0 ? (
                     <>
-                        {/* all Batch Button */}
                         <button
                         onClick={() => {
                             setSelectedBatch(null);
@@ -294,7 +293,6 @@ function AdminFinishedProductPage() {
                         
                         <br />
                         <br />
-                        {/*individual Batch Buttons */}
                         {
                             batches.map((batch) => (
                                 <button
@@ -317,6 +315,29 @@ function AdminFinishedProductPage() {
                 ) : (
                     <p>Loading batches...</p>
                 )
+            }
+        </div> */}
+        <div className='batch-filters'>
+            <button
+                onClick={() => {
+                    setSelectedBatch(null);
+                    fetchProducts();
+                }}
+                className={`batch-button ${selectedBatch === null ? 'active' : ''}`}
+            >
+                All Batches
+            </button>
+            
+            {
+                batches.map((batch) => (
+                    <button
+                        key={batch}
+                        onClick={() => fetchBatchProducts(batch)}
+                        className={`batch-button ${selectedBatch === batch ? 'active' : ''}`}
+                    >
+                        {batch}
+                    </button>
+                ))
             }
         </div>
 

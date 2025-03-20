@@ -267,53 +267,27 @@ function StaffProductsPage() {
             <p>As of {currentDate}</p>
         </div>
 
-        <div>
+        <div className='batch-filters'>
+            <button
+                onClick={() => {
+                    setSelectedBatch(null);
+                    fetchProducts();
+                }}
+                className={`batch-button ${selectedBatch === null ? 'active' : ''}`}
+            >
+                All Batches
+            </button>
+            
             {
-                batches.length > 0 ? (
-                    <>
-                        {/* all Batch Button */}
-                        <button
-                        onClick={() => {
-                            setSelectedBatch(null);
-                            fetchProducts();
-                        }}
-                        style={{
-                            margin: '0 10px',
-                            padding: '10px 20px',
-                            backgroundColor: selectedBatch === null ? 'green' : 'lightgray',
-                            color: 'white',
-                            border: 'none',
-                            cursor: 'pointer',
-                        }}
-                        >
-                            All Batch
-                        </button>
-                        
-                        <br />
-                        <br />
-                        {/*individual Batch Buttons */}
-                        {
-                            batches.map((batch) => (
-                                <button
-                                    key={batch}
-                                    onClick={() => fetchBatchProducts(batch)}
-                                    style={{
-                                        margin: '0 10px',
-                                        padding: '10px 20px',
-                                        backgroundColor: selectedBatch === batch ? 'green' : 'lightgray',
-                                        color: 'white',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    {batch}
-                                </button>
-                            ))
-                        }
-                    </>
-                ) : (
-                    <p>Loading batches...</p>
-                )
+                batches.map((batch) => (
+                    <button
+                        key={batch}
+                        onClick={() => fetchBatchProducts(batch)}
+                        className={`batch-button ${selectedBatch === batch ? 'active' : ''}`}
+                    >
+                        {batch}
+                    </button>
+                ))
             }
         </div>
         
