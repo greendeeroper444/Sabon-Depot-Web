@@ -1,20 +1,21 @@
 import React, { useState } from 'react'
 import '../../../CSS/CustomerCSS/Shop/CustomerShopContent.css';
-import UseFetchProductsHook from '../../../hooks/StaffHooks/UseFetchProductsHook';
 import IsDiscountValidUtils from '../../../utils/IsDiscountValidUtils';
 import { Link } from 'react-router-dom';
+import UseFetchProductsHook from '../../../hooks/StaffHooks/UseFetchProductsHook';
 
 function StaffDirectOrdersWalkinContentComponent({
     onAddToCart, 
     cartItems, 
     setCartItems, 
-    staff,
+    admin,
     selectedSizeUnit, 
     selectedProductSize,
     categories,
     selectedCategory
 }) {
-    const {products, loading, error} = UseFetchProductsHook(selectedCategory);
+    //use the products from the parent component instead of fetching again
+    const { products, loading, error } = UseFetchProductsHook(selectedCategory);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -26,8 +27,6 @@ function StaffDirectOrdersWalkinContentComponent({
         return categoryMatches && sizeUnitMatches && productSizeMatches;
     });
     
-
-
     const totalItems = filteredProducts.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -43,14 +42,13 @@ function StaffDirectOrdersWalkinContentComponent({
     if(loading) return <div>Loading...</div>;
     if(error) return <div>Error: {error.message}</div>;
 
-
   return (
     <div className='shop-products-content'>
         <div className='shop-products-contents'>
             <ul>
                 {
                     paginatedProducts.map((product, index) => {
-                        const shouldShowDiscount = IsDiscountValidUtils(staff) && product.discountPercentage > 0;
+                        const shouldShowDiscount = IsDiscountValidUtils(admin) && product.discountPercentage > 0;
                         const finalPrice = shouldShowDiscount ? product.discountedPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : product.price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
                         return (
@@ -58,7 +56,8 @@ function StaffDirectOrdersWalkinContentComponent({
                                 <div>
                                     <div className='product-image-admin-container'>
                                         <img src={`${product.imageUrl}`} alt={product.productName} />
-                                        {index === products.length - 1 && <div className='new-badge'>New</div>}
+                                        {/*show new badge only for the most recent product */}
+                                        {index === 0 && <div className='new-badge'>New</div>}
                                         {shouldShowDiscount && <div className='discount-badge'>{product.discountPercentage}% OFF</div>}
                                     </div>
                                     <div className='details-list'>

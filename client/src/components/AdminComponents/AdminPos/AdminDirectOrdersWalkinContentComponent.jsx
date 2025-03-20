@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import '../../../CSS/CustomerCSS/Shop/CustomerShopContent.css';
-import UseFetchProductsHook from '../../../hooks/StaffHooks/UseFetchProductsHook';
 import IsDiscountValidUtils from '../../../utils/IsDiscountValidUtils';
 import { Link } from 'react-router-dom';
+import UseFetchProductsHook from '../../../hooks/AdminHooks/UseFetchProductsHook';
 
 function AdminDirectOrdersWalkinContentComponent({
     onAddToCart, 
@@ -14,7 +14,8 @@ function AdminDirectOrdersWalkinContentComponent({
     categories,
     selectedCategory
 }) {
-    const {products, loading, error} = UseFetchProductsHook(selectedCategory);
+    //use the products from the parent component instead of fetching again
+    const { products, loading, error } = UseFetchProductsHook(selectedCategory);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -26,8 +27,6 @@ function AdminDirectOrdersWalkinContentComponent({
         return categoryMatches && sizeUnitMatches && productSizeMatches;
     });
     
-
-
     const totalItems = filteredProducts.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -43,7 +42,6 @@ function AdminDirectOrdersWalkinContentComponent({
     if(loading) return <div>Loading...</div>;
     if(error) return <div>Error: {error.message}</div>;
 
-
   return (
     <div className='shop-products-content'>
         <div className='shop-products-contents'>
@@ -58,7 +56,8 @@ function AdminDirectOrdersWalkinContentComponent({
                                 <div>
                                     <div className='product-image-admin-container'>
                                         <img src={`${product.imageUrl}`} alt={product.productName} />
-                                        {index === products.length - 1 && <div className='new-badge'>New</div>}
+                                        {/*show new badge only for the most recent product */}
+                                        {index === 0 && <div className='new-badge'>New</div>}
                                         {shouldShowDiscount && <div className='discount-badge'>{product.discountPercentage}% OFF</div>}
                                     </div>
                                     <div className='details-list'>

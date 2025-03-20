@@ -7,15 +7,17 @@ export default function UseFetchProductsHook(selectedCategory) {
     const [error, setError] = useState(null);
 
     const fetchProducts = async(category = '') => {
+        setLoading(true);
+        setError(null);
         try {
             const response = await axios.get('/staffProduct/getProductsStaff', {
                 params: {category}
             });
-            const productData = Array.isArray(response.data) ? response.data : [];
-            setProducts(productData);
-            setLoading(false);
+
+            setProducts(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             setError(error);
+        } finally {
             setLoading(false);
         }
     };

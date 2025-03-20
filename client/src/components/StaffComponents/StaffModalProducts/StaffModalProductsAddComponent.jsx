@@ -6,7 +6,6 @@ import axios from 'axios';
 
 function StaffModalProductsAddComponent({isOpen, onClose, fetchProducts}) {
     const [selectedImage, setSelectedImage] = useState(null);
-    const [categories, setCategories] = useState([]);
     const [dataInput, setDataInput] = useState({
         productCode: '', 
         productName: '', 
@@ -21,6 +20,7 @@ function StaffModalProductsAddComponent({isOpen, onClose, fetchProducts}) {
         expirationDate: '',
         description: '',
     })
+    const [categories, setCategories] = useState([]);
     const [sizeUnits, setSizeUnits] = useState([]);
 
     useEffect(() => {
@@ -38,6 +38,7 @@ function StaffModalProductsAddComponent({isOpen, onClose, fetchProducts}) {
         fetchSizeUnits();
     }, []);
 
+
     useEffect(() => {
         const fetchCategories = async() => {
             try {
@@ -49,7 +50,7 @@ function StaffModalProductsAddComponent({isOpen, onClose, fetchProducts}) {
                     setCategories([]); //if not an array, set it as an empty array
                 }
             } catch (error) {
-                console.error(error);
+                console.error('Error fetching categories:', error);
                 setCategories([]); //set empty array if there's an error
             }
         };
@@ -68,7 +69,6 @@ function StaffModalProductsAddComponent({isOpen, onClose, fetchProducts}) {
     };
     
 
-
     const handleFileInputClick = () => {
         document.getElementById('file-input').click();
     };
@@ -86,11 +86,10 @@ function StaffModalProductsAddComponent({isOpen, onClose, fetchProducts}) {
         e.preventDefault();
         const {productCode, productName, category, price, quantity, stockLevel, discountPercentage, discountedDate, productSize, sizeUnit, expirationDate, description} = dataInput;
 
-        if(!productCode || !productName || !category || !price || !quantity || !stockLevel || !productSize || !sizeUnit || !expirationDate){
+        if(!productCode || !productName || !category || !price || !quantity || !stockLevel || !stockLevel || !productSize || !sizeUnit || !expirationDate){
             toast.error('Please input all fields');
             return;
         }
-        
 
         const formData = new FormData();
         formData.append('productCode', productCode);
@@ -107,12 +106,18 @@ function StaffModalProductsAddComponent({isOpen, onClose, fetchProducts}) {
         formData.append('expirationDate', expirationDate);
         formData.append('description', description);
 
+        //show loading toast
+        const loadingToastId = toast.loading('Uploading product...');
+
         try {
             const response = await axios.post('/staffProduct/uploadProductStaff', formData, {
                 headers: { 
                     'Content-Type': 'multipart/form-data' 
                 }
             });
+
+            //remove loading toast
+            toast.dismiss(loadingToastId);
             
             if(response.data.error){
                 toast.error(response.data.error)
@@ -136,10 +141,11 @@ function StaffModalProductsAddComponent({isOpen, onClose, fetchProducts}) {
                 fetchProducts();//toupdate the table in the prices page
             }
         } catch (error) {
-            console.log(error)
+            console.log(error);
+            toast.dismiss(loadingToastId);
+            toast.error('Something went wrong, please try again.');
         }
     };
-
 
     const handleSizeUnitChange = (e) => {
         setDataInput({
@@ -170,8 +176,6 @@ function StaffModalProductsAddComponent({isOpen, onClose, fetchProducts}) {
             </select>
         );
     };
-    
-    
 
   return (
     <div className='admin-modal-products-add-container'>

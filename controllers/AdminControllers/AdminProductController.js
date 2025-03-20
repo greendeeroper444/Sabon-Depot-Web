@@ -493,7 +493,58 @@ const getUniqueCategoriesAdmin = async(req, res) => {
     }
 };
 
-const getProductsAdmin = async (req, res) => {
+// const getProductsAdmin = async(req, res) => {
+//     const category = req.query.category;
+
+//     try {
+//         const query = {
+//             ...(category ? {category: category} : {}),
+//             isArchived: false,
+//         };
+
+//         //fetch products only from ProductModel
+//         const customerProducts = await ProductModel.find(query).sort({createdAt: -1});
+
+//         //group by productName and prioritize by sizeUnit and productSize
+//         const productMap = new Map();
+
+//         customerProducts.forEach(product => {
+//             const key = product.productName;
+
+//             if(!productMap.has(key)){
+//                 productMap.set(key, product);
+//             } else {
+//                 const existingProduct = productMap.get(key);
+
+//                 const sizePriority = {
+//                     'Gallons': 3,
+//                     'Liters': 2,
+//                     'Milliliters': 1,
+//                 };
+
+//                 const existingSizePriority = sizePriority[existingProduct.sizeUnit] || 0;
+//                 const newSizePriority = sizePriority[product.sizeUnit] || 0;
+
+//                 if(
+//                     newSizePriority > existingSizePriority ||
+//                     (newSizePriority === existingSizePriority && product.productSize > existingProduct.productSize)
+//                 ){
+//                     productMap.set(key, product);
+//                 }
+//             }
+//         });
+
+//         const prioritizedProducts = Array.from(productMap.values()).sort((a, b) => b.createdAt - a.createdAt);
+
+//         return res.json(prioritizedProducts);
+//     } catch (error) {
+//         console.log(error);
+//         return res.status(500).json({
+//             message: 'Server error',
+//         });
+//     }
+// };
+const getProductsAdmin = async(req, res) => {
     const category = req.query.category;
 
     try {
@@ -503,23 +554,17 @@ const getProductsAdmin = async (req, res) => {
         };
 
         //fetch all products from ProductModel
-        const customerProducts = await ProductModel.find(query);
+        const allProducts = await ProductModel.find(query).sort({createdAt: -1});
 
-        //fetch all products from WorkinProgressProductModel
-        const workinProgressProducts = await WorkinProgressProductModel.find(query);
-
-        //combine both product lists
-        const allProducts = [...customerProducts, ...workinProgressProducts];
-
-        //group by productName and prioritize by sizeUnit and productSize
+        //group by productName and sizeUnit
         const productMap = new Map();
 
         allProducts.forEach(product => {
-            const key = product.productName;
+            const key = `${product.productName}-${product.sizeUnit}`;
 
             if(!productMap.has(key)){
                 productMap.set(key, product);
-            } else{
+            } else {
                 const existingProduct = productMap.get(key);
 
                 const sizePriority = {
@@ -533,14 +578,14 @@ const getProductsAdmin = async (req, res) => {
 
                 if(
                     newSizePriority > existingSizePriority ||
-                    (newSizePriority === existingSizePriority && product.productSize > existingProduct.productSize)
+                    (newSizePriority === existingSizePriority && parseInt(product.productSize) > parseInt(existingProduct.productSize))
                 ){
                     productMap.set(key, product);
                 }
             }
         });
 
-        const prioritizedProducts = Array.from(productMap.values());
+        const prioritizedProducts = Array.from(productMap.values()).sort((a, b) => b.createdAt - a.createdAt);
 
         return res.json(prioritizedProducts);
     } catch (error) {
