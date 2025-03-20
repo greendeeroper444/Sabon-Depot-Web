@@ -236,14 +236,14 @@ function AdminDashboardPage() {
 
 
         <div className='admin-dashboard-first'>
-            <div className='admin-top-sales'>
+        <div className='admin-top-sales'>
                 <h3>Top Sales</h3>
                 <div className='admin-top-sales-list'>
                 {
                     topSales.length > 0 ? (
                         //filter out products without a valid productId
                         topSales
-                            .filter(product => product.productId) //keep only products with a valid productId
+                            .filter(product => product.productId || product._id) //keep only products with valid ID
                             .sort((a, b) => b.totalSales - a.totalSales) //sort by totalSales in descending order
                             .slice(0, 3) //get the top 3 products
                             .map((product, index) => (
@@ -255,13 +255,13 @@ function AdminDashboardPage() {
                                             alt={product.productName || 'Product'}
                                             />
                                             <strong>{product.productName}</strong>
-                                            <div>{product.totalProduct} products sold</div>
+                                            <div>{product.quantitySold || product.totalProduct || 0} products sold</div>
                                         </>
                                     </div>
                                     <>
-                                        <div className='admin-price'>Price: {product.price}</div>
-                                        <div className='admin-inventory'>Inventory: {product.totalProduct}</div>
-                                        <div className='admin-sale'>Sale: {product.totalSales}</div>
+                                        <div className='admin-price'>Price: {product.price || (product.productId && product.productId.price) || 'N/A'}</div>
+                                        <div className='admin-inventory'>Inventory: {product.quantitySold || product.totalProduct || 0}</div>
+                                        <div className='admin-sale'>Sale: {product.totalSales || 0}</div>
                                     </>
                                 </div>
                             ))
