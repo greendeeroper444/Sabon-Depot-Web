@@ -21,6 +21,7 @@ import StaffOrderSummaryRefillPage from '../pages/StaffPage/StaffOrderSummaryRef
 import StaffQuickSalesWalkinPage from '../pages/StaffPage/StaffQuickSalesOrder/StaffQuickSalesWalkinPage'
 import StaffQuickSalesRefillPage from '../pages/StaffPage/StaffQuickSalesOrder/StaffQuickSalesRefillPage'
 import StaffRefillProductPage from '../pages/StaffPage/StaffRefillProductPage'
+import InventoryReportPage from '../pages/StaffPage/InventoryReportPage'
 
 function StaffRoutes() {
   return (
@@ -48,6 +49,7 @@ function StaffRoutes() {
                 <Route path='/staff/quicksales/sales-refill' element={<StaffQuickSalesRefillPage />} />
                 <Route path='/staff/settings/:staffId' element={<StaffSettingsPage />} />
                 <Route path='/staff/accounts' element={<StaffAccountsPage />} />
+                <Route path='/staff/reports/inventory-report' element={<InventoryReportPage/>} />
             </Routes>
         </div>
     </StaffContextProvider>

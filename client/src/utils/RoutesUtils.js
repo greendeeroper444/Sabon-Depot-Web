@@ -53,6 +53,7 @@ export const staffRoutes = [
     '/staff/accounts',
     '/staff/quicksales/sales-walkin',
     '/staff/quicksales/sales-refill',
+    '/staff/reports/inventory-report',
 ];
   
 export const isStaffRoute = (path) => {

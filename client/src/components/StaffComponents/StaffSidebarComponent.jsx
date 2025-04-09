@@ -143,6 +143,23 @@ function StaffSidebarComponent() {
                     <span>Accounts</span>
                 </NavLink>
             </li>
+            
+            <li>
+                <div className='admin-sidebar-item' onClick={toggleDropdownReports}>
+                    <img src={reportsIcon} alt="Reports" className='sidebar-icon' />
+                    <span>Reports</span>
+                    <FontAwesomeIcon icon={isDropdownOpenReports ? faAngleUp : faAngleDown} />
+                </div>
+                {
+                    isDropdownOpenReports && (
+                        <div className='admin-sidebar-item-dropdown'>
+                            <NavLink to='/staff/reports/inventory-report' className='admin-sidebar-item' activeClassName='active'>
+                                <span>Inventory Report</span>
+                            </NavLink>
+                        </div>
+                    )
+                }
+            </li>
             <li>
                 <NavLink to={`/staff/settings/${staff?._id}`} className='admin-sidebar-item' activeClassName='active'>
                     <img src={settingsIcon} alt="Accounts" className='sidebar-icon' />
