@@ -10,6 +10,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import StaffModalArchivedProductComponent from '../../components/StaffComponents/StaffModalProducts/StaffModalArchivedProductComponent';
 import { orderDate } from '../../utils/OrderUtils';
+import { optimizeCloudinaryUrl } from '../../utils/OptimizeCloudinaryUrl';
 
 
 function StaffProductsPage() {
@@ -25,16 +26,31 @@ function StaffProductsPage() {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedBatch, setSelectedBatch] = useState(null);
     const [batches, setBatches] = useState([]);
+    
+    //pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
 
     const categories = [...new Set(products.map((product) => product.category))];
 
     const handleCategoryChange = (event) => {
         setSelectedCategory(event.target.value);
+        setCurrentPage(1); //reset to first page on filter change
     };
 
     const filteredProducts = selectedCategory
     ? products.filter((product) => product.category === selectedCategory)
     : products;
+
+    //calculate pagination
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+
+    useEffect(() => {
+        setTotalPages(Math.ceil(filteredProducts.length / itemsPerPage));
+    }, [filteredProducts, itemsPerPage]);
 
     //display/get product data
     const fetchProducts = async() => {
@@ -46,7 +62,7 @@ function StaffProductsPage() {
             
             //sort batches numerically
             const sortedBatches = uniqueBatches.sort((a, b) => {
-                //extract numbers from batch names (e.g., "Batch 1" -> 1)
+                //extract numbers from batch names (e.g., 'Batch 1' -> 1)
                 const numA = parseInt(a.replace(/\D/g, ''));
                 const numB = parseInt(b.replace(/\D/g, ''));
                 
@@ -226,6 +242,11 @@ function StaffProductsPage() {
     });
 
     
+    //pagination navigation
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const nextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    const prevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
+    
     if(loading){
         return <p>Loading...</p>;
     }
@@ -291,19 +312,56 @@ function StaffProductsPage() {
             }
         </div>
         
-        <div className='staff-products-controls'>
-            <select onChange={handleCategoryChange} value={selectedCategory}>
-                <option value=''>All Categories</option>
-                {
-                    categories.map((category, index) => (
-                        <option key={index} value={category}>
-                            {category}
-                        </option>
-                    ))
-                }
-            </select>
-            <button onClick={handleAddProductClick}>Add Product</button>
-            <button onClick={handleGenerateReport}>Reports</button>
+        <div className='staff-product-controls'>
+            <div className='controls-title'>
+                <h2>Products</h2>
+                <span className='product-count'>{filteredProducts.length} items</span>
+            </div>
+            
+            <div className='controls-actions'>
+                <div className='controls-filters'>
+                    <div className='filter-item'>
+                        <span className='filter-label'>Category:</span>
+                        <select 
+                        onChange={handleCategoryChange} 
+                        value={selectedCategory}
+                        >
+                        <option value=''>All Categories</option>
+                        {
+                            categories.map((category, index) => (
+                                <option key={index} value={category}>
+                                {category}
+                                </option>
+                            ))
+                        }
+                        </select>
+                    </div>
+                    <div className='filter-item'>
+                        <span className='filter-label'>Show:</span>
+                        <select 
+                        value={itemsPerPage} 
+                        onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setCurrentPage(1);
+                        }}
+                        >
+                            <option value={5}>5 per page</option>
+                            <option value={10}>10 per page</option>
+                            <option value={20}>20 per page</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div className='controls-buttons'>
+                    <button className='btn-add' onClick={handleAddProductClick}>
+                        <span className='plus-icon'>+</span> Add Product
+                    </button>
+                    
+                    <button className='btn-print' onClick={handleGenerateReport}>
+                        <i className='print-icon'></i> Print Report
+                    </button>
+                </div>
+            </div>
         </div>
 
         {error && <p>{error}</p>}
@@ -312,65 +370,93 @@ function StaffProductsPage() {
             products.length === 0 ? (
                 <p>No products available.</p>
             ) : (
-                <table className='staff-products-table'>
-                    <thead>
-                        <tr>
-                            <th>Product Code</th>
-                            <th>Product Name</th>
-                            <th>Category</th>
-                            <th>Size</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Availability</th>
-                            <th>Expiration</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            filteredProducts.map((product) => (
-                                <tr 
-                                key={product._id} 
-                                className={`${product.isArchived ? 'archived-product' : ''} 
-                                ${product.quantity < product.stockLevel ? 'low-quantity' : ''} 
-                                ${product.quantity === 0 ? 'out-of-quantity' : ''}
-                                ${product.isArchived && product.quantity < product.stockLevel ? 'low-quantity archived-product' : ''}`}
-                                >
-                                    <td>{product.productCode}</td>
-                                    <td className='product-image-name'>
-                                    {/* <img src={`${import.meta.env.VITE_BASE_URL}${product.imageUrl}`} alt={product.productName} />{' '}{product.productName} */}
-                                        <img src={`${product.imageUrl}`} alt={product.productName} />{' '}{product.productName}
-                                    </td>
-                                    <td>{product.category}</td>
-                                    <td>{product.sizeUnit.slice(0, 1)} - {product.productSize}</td>
-                                    <td>{`₱${product.price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
-                                    <td>{product.quantity}</td>
-                                    <td className={product.quantity > 0 ? (product.quantity > product.stockLevel ? 'in-stock' : 'low-stock') : 'out-of-stock'}>
-                                        {product.quantity > 0 ? (product.quantity > product.stockLevel ? 'In stock' : 'Low stock') : 'Out of stock'}
-                                    </td>
-                                    <td>{`${orderDate(product.expirationDate)}`}</td>
-                                    <td className='actions-tbody'>
-                                        <button className='button-edit-icon'
-                                        onClick={() => handleEditProductClick(product._id)}
-                                        >
-                                            <img src={editIcon} alt="Edit Icon" />
-                                        </button>
-                                        <button className='button-archived-icon' 
-                                        onClick={() => handleArchivedProductClick(product._id, product.isArchived)}>
+                <>
+                    <table className='staff-products-table'>
+                        <thead>
+                            <tr>
+                                <th>Product Code</th>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Size</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Availability</th>
+                                <th>Expiration</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                currentItems.map((product) => (
+                                    <tr 
+                                    key={product._id} 
+                                    className={`${product.isArchived ? 'archived-product' : ''} 
+                                    ${product.quantity < product.stockLevel ? 'low-quantity' : ''} 
+                                    ${product.quantity === 0 ? 'out-of-quantity' : ''}
+                                    ${product.isArchived && product.quantity < product.stockLevel ? 'low-quantity archived-product' : ''}`}
+                                    >
+                                        <td>{product.productCode}</td>
+                                        <td className='product-image-name'>
                                             {
-                                                product.isArchived ? (
-                                                    <span>Unarchive</span>
+                                                product.imageUrl ? (
+                                                    <img 
+                                                    src={optimizeCloudinaryUrl(product.imageUrl, 300, 300)} 
+                                                    alt={product.productName} 
+                                                    loading='lazy'
+                                                    />
                                                 ) : (
-                                                    <img src={archiveIcon} alt="Archive Icon" />
+                                                    <div className='placeholder-image'></div>
                                                 )
                                             }
-                                        </button>
-                                    </td>
-                                </tr>
+                                            {' '}{product.productName}
+                                        </td>
+                                        <td>{product.category}</td>
+                                        <td>{product.sizeUnit.slice(0, 1)} - {product.productSize}</td>
+                                        <td>{`₱${product.price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
+                                        <td>{product.quantity}</td>
+                                        <td className={product.quantity > 0 ? (product.quantity > product.stockLevel ? 'in-stock' : 'low-stock') : 'out-of-stock'}>
+                                            {product.quantity > 0 ? (product.quantity > product.stockLevel ? 'In stock' : 'Low stock') : 'Out of stock'}
+                                        </td>
+                                        <td>{`${orderDate(product.expirationDate)}`}</td>
+                                        <td className='actions-tbody'>
+                                            <button className='button-edit-icon'
+                                            onClick={() => handleEditProductClick(product._id)}
+                                            >
+                                                <img src={editIcon} alt="Edit Icon" />
+                                            </button>
+                                            <button className='button-archived-icon' 
+                                            onClick={() => handleArchivedProductClick(product._id, product.isArchived)}>
+                                                {
+                                                    product.isArchived ? (
+                                                        <span>Unarchive</span>
+                                                    ) : (
+                                                        <img src={archiveIcon} alt="Archive Icon" />
+                                                    )
+                                                }
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            }
+                        </tbody>
+                    </table>
+                    {/*pagination controls */}
+                    <div className='pagination-controls'>
+                        <button onClick={prevPage} disabled={currentPage === 1}>Previous</button>
+                        {
+                            Array.from({ length: totalPages }, (_, i) => (
+                                <button 
+                                    key={i + 1}
+                                    onClick={() => paginate(i + 1)}
+                                    className={currentPage === i + 1 ? 'active-page' : ''}
+                                >
+                                    {i + 1}
+                                </button>
                             ))
                         }
-                    </tbody>
-                </table>
+                        <button onClick={nextPage} disabled={currentPage === totalPages}>Next</button>
+                    </div>
+                </>
             )
         }
     </div>

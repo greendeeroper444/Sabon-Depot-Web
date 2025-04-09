@@ -207,3 +207,157 @@
     color: white;
     border-color: #077A37;
 }
+
+
+.staff-products-container .staff-product-controls{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 16px;
+}
+  
+
+.staff-product-controls .controls-title{
+    display: flex;
+    align-items: baseline;
+}
+  
+.staff-product-controls .controls-title h2{
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+}
+  
+.staff-product-controls .product-count{
+    font-size: 14px;
+    color: #6c757d;
+    margin-left: 8px;
+}
+  
+ 
+.staff-product-controls .controls-actions{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+  
+
+.staff-product-controls .controls-filters{
+    display: flex;
+    gap: 16px;
+}
+  
+.staff-product-controls .filter-item{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+  
+.staff-product-controls .filter-label{
+    font-size: 14px;
+    color: #495057;
+}
+  
+.staff-product-controls select{
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: white;
+    min-width: 150px;
+    font-size: 14px;
+}
+  
+
+.staff-product-controls .controls-buttons{
+    display: flex;
+    gap: 12px;
+}
+  
+.staff-product-controls .btn-add{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: #077A37;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+}
+  
+.staff-product-controls .btn-add:hover{
+    background-color: #056129;
+}
+  
+.staff-product-controls .plus-icon{
+    font-weight: bold;
+}
+  
+ 
+.staff-product-controls .btn-print{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: white;
+    color: #495057;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+}
+  
+.staff-product-controls .btn-print:hover{
+    background-color: #f1f3f5;
+}
+  
+ 
+@media (max-width: 992px){
+    .staff-product-controls{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .staff-product-controls .controls-actions{
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+  
+@media (max-width: 768px){
+    .staff-product-controls .controls-actions{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .staff-product-controls .controls-filters{
+        width: 100%;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .staff-product-controls .filter-item{
+        width: 100%;
+    }
+    
+    .staff-product-controls select{
+        flex-grow: 1;
+    }
+    
+    .staff-product-controls .controls-buttons{
+        width: 100%;
+    }
+        
+    .staff-product-controls .btn-add,
+    .staff-product-controls .btn-print{
+        flex: 1;
+        justify-content: center;
+    }
+}

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import '../../../../CSS/CustomerCSS/CustomerModalShopDetails.css';
-import cancelIcon from '../../../../assets/modals/modal-icon-cancel.png';
-import cancelIcon2 from '../../../../assets/modals/modal-icon-cancel-2.png';
 import { useNavigate } from 'react-router-dom';
 import Draggable from 'react-draggable';
 import toast from 'react-hot-toast';

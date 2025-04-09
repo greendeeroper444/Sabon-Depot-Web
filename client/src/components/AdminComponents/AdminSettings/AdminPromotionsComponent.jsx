@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { orderDate } from '../../../utils/OrderUtils';
 import AdminModalProductsEditComponent from '../../../components/AdminComponents/AdminModalProducts/AdminModalProductsEditComponent';
 import '../../../CSS/AdminCSS/AdminSettings/AdminPromitionsComponent.css';
+import { optimizeCloudinaryUrl } from '../../../utils/OptimizeCloudinaryUrl';
 
 function AdminPromotionsComponent() {
     const [batches, setBatches] = useState([]);
@@ -283,7 +284,11 @@ function AdminPromotionsComponent() {
                                 >
                                     <td className='product-info'>
                                         <div className='product-image-container'>
-                                            <img src={product.imageUrl} alt={product.productName} />
+                                            <img 
+                                            src={optimizeCloudinaryUrl(product.imageUrl, 300, 300)} 
+                                            alt={product.productName}
+                                            loading='lazy'
+                                            />
                                         </div>
                                         <div className='product-details'>
                                             <div className='product-name'>{product.productName}</div>

@@ -3,6 +3,7 @@ import '../../../CSS/CustomerCSS/Shop/CustomerShopContent.css';
 import IsDiscountValidUtils from '../../../utils/IsDiscountValidUtils';
 import { Link } from 'react-router-dom';
 import UseFetchProductsHook from '../../../hooks/StaffHooks/UseFetchProductsHook';
+import { optimizeCloudinaryUrl } from '../../../utils/OptimizeCloudinaryUrl';
 
 function StaffDirectOrdersWalkinContentComponent({
     onAddToCart, 
@@ -55,7 +56,11 @@ function StaffDirectOrdersWalkinContentComponent({
                             <li key={product._id}>
                                 <div>
                                     <div className='product-image-admin-container'>
-                                        <img src={`${product.imageUrl}`} alt={product.productName} />
+                                        <img 
+                                         src={optimizeCloudinaryUrl(product.imageUrl, 300, 300)} 
+                                        alt={product.productName} 
+                                        loading='lazy'
+                                         />
                                         {/*show new badge only for the most recent product */}
                                         {index === 0 && <div className='new-badge'>New</div>}
                                         {shouldShowDiscount && <div className='discount-badge'>{product.discountPercentage}% OFF</div>}

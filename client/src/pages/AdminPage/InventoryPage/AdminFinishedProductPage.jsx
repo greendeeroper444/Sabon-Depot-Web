@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import '../../../CSS/AdminCSS/AdminInventory/FinishedProduct.css'
 import axios from 'axios';
 import editIcon from '../../../assets/staff/stafficons/staff-orders-edit-icon.png';
@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { orderDate } from '../../../utils/OrderUtils';
-
+import { optimizeCloudinaryUrl } from '../../../utils/OptimizeCloudinaryUrl';
 
 function AdminFinishedProductPage() {
     const [batches, setBatches] = useState([]);
@@ -32,16 +32,31 @@ function AdminFinishedProductPage() {
         notInStock: 0
     });
     const [selectedCategory, setSelectedCategory] = useState('');
+    
+    //pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
 
     const categories = [...new Set(products.map((product) => product.category))];
 
     const handleCategoryChange = (event) => {
         setSelectedCategory(event.target.value);
+        setCurrentPage(1); //reset to first page on filter change
     };
 
     const filteredProducts = selectedCategory
     ? products.filter((product) => product.category === selectedCategory)
     : products;
+
+    //calculate pagination
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+
+    useEffect(() => {
+        setTotalPages(Math.ceil(filteredProducts.length / itemsPerPage));
+    }, [filteredProducts, itemsPerPage]);
 
     //display/get product data
     const fetchProducts = async() => {
@@ -53,7 +68,7 @@ function AdminFinishedProductPage() {
             
             //sort batches numerically
             const sortedBatches = uniqueBatches.sort((a, b) => {
-                //extract numbers from batch names (e.g., "Batch 1" -> 1)
+                //extract numbers from batch names (e.g., 'Batch 1' -> 1)
                 const numA = parseInt(a.replace(/\D/g, ''));
                 const numB = parseInt(b.replace(/\D/g, ''));
                 
@@ -73,8 +88,6 @@ function AdminFinishedProductPage() {
         }
     };
     
-
-
     useEffect(() => {
         fetchProducts();
     }, []);
@@ -93,7 +106,6 @@ function AdminFinishedProductPage() {
         }
     };
 
-
     useEffect(() => {
         const fetchSummaryData = async() => {
             try {
@@ -106,7 +118,6 @@ function AdminFinishedProductPage() {
 
         fetchSummaryData();
     }, []);
-
 
     //generate PDF report
     const handleGenerateReport = () => {
@@ -171,7 +182,6 @@ function AdminFinishedProductPage() {
         setSelectedProduct(null);
     };
 
-    
     //delete function
     const handleConfirmDelete = async() => {
         try {
@@ -191,6 +201,7 @@ function AdminFinishedProductPage() {
         setProductIdToDelete(productId);
         setIsDeleteModalOpen(true);
     };
+    
     const handleCloseDeleteModal = () => {
         setIsDeleteModalOpen(false);
         setProductIdToDelete(null);
@@ -204,7 +215,10 @@ function AdminFinishedProductPage() {
         setIsModalOpen(false);
     };
 
-
+    //pagination navigation
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const nextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    const prevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
     
     if(loading){
         return <p>Loading...</p>;
@@ -257,9 +271,6 @@ function AdminFinishedProductPage() {
                         <td>{summaryData.notInStock}</td>
                     </tr>
                     <tr className='subtext'>
-                        {/* <td>Last 7 days</td>
-                        <td>Last 7 days</td>
-                        <td>Last 7 days</td> */}
                         <td>Total</td>
                         <td>Ordered</td>
                         <td>Not in stock</td>
@@ -267,56 +278,8 @@ function AdminFinishedProductPage() {
                 </tbody>
             </table>
             </div>
-
         </div>
 
-        {/* <div>
-            {
-                batches.length > 0 ? (
-                    <>
-                        <button
-                        onClick={() => {
-                            setSelectedBatch(null);
-                            fetchProducts();
-                        }}
-                        style={{
-                            margin: '0 10px',
-                            padding: '10px 20px',
-                            backgroundColor: selectedBatch === null ? 'green' : 'lightgray',
-                            color: 'white',
-                            border: 'none',
-                            cursor: 'pointer',
-                        }}
-                        >
-                            All Batch
-                        </button>
-                        
-                        <br />
-                        <br />
-                        {
-                            batches.map((batch) => (
-                                <button
-                                    key={batch}
-                                    onClick={() => fetchBatchProducts(batch)}
-                                    style={{
-                                        margin: '0 10px',
-                                        padding: '10px 20px',
-                                        backgroundColor: selectedBatch === batch ? 'green' : 'lightgray',
-                                        color: 'white',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    {batch}
-                                </button>
-                            ))
-                        }
-                    </>
-                ) : (
-                    <p>Loading batches...</p>
-                )
-            }
-        </div> */}
         <div className='batch-filters'>
             <button
                 onClick={() => {
@@ -342,20 +305,69 @@ function AdminFinishedProductPage() {
         </div>
 
         <div className='admin-finished-product-controls'>
-            <div>Products</div>
-            <div>
-                <select onChange={handleCategoryChange} value={selectedCategory}>
-                    <option value=''>All Categories</option>
-                    {
-                        categories.map((category, index) => (
-                            <option key={index} value={category}>
+            <div className='controls-title'>
+                <h2>Products</h2>
+                <span className='product-count'>{filteredProducts.length} items</span>
+            </div>
+            
+            <div className='controls-actions'>
+                <div className='controls-filters'>
+                    <div className='filter-item'>
+                        <span className='filter-label'>Category:</span>
+                        <select 
+                        onChange={handleCategoryChange} 
+                        value={selectedCategory}
+                        >
+                        <option value=''>All Categories</option>
+                        {
+                            categories.map((category, index) => (
+                                <option key={index} value={category}>
                                 {category}
-                            </option>
-                        ))
-                    }
-                </select>
-                <button onClick={handleAddProductClick}>Add Product</button>
-                <button onClick={handleGenerateReport}>Print</button>
+                                </option>
+                            ))
+                        }
+                        </select>
+                    </div>
+                    
+                    <div className='filter-item' style={{ display: 'none' }}>
+                        <span className='filter-label'>Show:</span>
+                        <select 
+                        value={itemsPerPage} 
+                        onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setCurrentPage(1);
+                        }}
+                        >
+                            <option value={5}>5 per page</option>
+                            <option value={10}>10 per page</option>
+                            <option value={20}>20 per page</option>
+                        </select>
+                    </div>
+                    <div className='filter-item'>
+                        <span className='filter-label'>Show:</span>
+                        <select 
+                        value={itemsPerPage} 
+                        onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setCurrentPage(1);
+                        }}
+                        >
+                            <option value={5}>5 per page</option>
+                            <option value={10}>10 per page</option>
+                            <option value={20}>20 per page</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div className='controls-buttons'>
+                    <button className='btn-add' onClick={handleAddProductClick}>
+                        <span className='plus-icon'>+</span> Add Product
+                    </button>
+                    
+                    <button className='btn-print' onClick={handleGenerateReport}>
+                        <i className='print-icon'></i> Print Report
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -365,58 +377,88 @@ function AdminFinishedProductPage() {
             products.length === 0 ? (
                 <p>No products available.</p>
             ) : (
-                <table className='admin-finished-product-table'>
-                    <thead>
-                        <tr>
-                            <th>Product Code</th>
-                            <th>Product Name</th>
-                            <th>Category</th>
-                            <th>Size</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Availability</th>
-                            <th>Expiration</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            filteredProducts.map((product) => (
-                                <tr 
-                                key={product._id} 
-                                className={`${product.isArchived ? 'archived-product' : ''} 
-                                ${product.quantity < product.stockLevel ? 'low-quantity' : ''} 
-                                ${product.quantity === 0 ? 'out-of-quantity' : ''}
-                                ${product.isArchived && product.quantity < product.stockLevel ? 'low-quantity archived-product' : ''}`}
-                                >
-                                    <td>{product.productCode}</td>
-                                    <td className='product-image-name'>
-                                        <img src={`${product.imageUrl}`} alt={product.productName} />{' '}{product.productName}
-                                    </td>
-                                    <td>{product.category}</td>
-                                    <td>{product.sizeUnit.slice(0, 1)} - {product.productSize}</td>
-                                    <td>{product.price}</td>
-                                    <td>{product.quantity}</td>
-                                    <td className={product.quantity > 0 ? (product.quantity > product.stockLevel ? 'in-stock' : 'low-stock') : 'out-of-stock'}>
-                                        {product.quantity > 0 ? (product.quantity > product.stockLevel ? 'In stock' : 'Low stock') : 'Out of stock'}
-                                    </td>
-                                    <td>{`${orderDate(product.expirationDate)}`}</td>
-                                    <td className='actions-tbody'>
-                                        <button className='button-edit-icon'
-                                        onClick={() => handleEditProductClick(product._id)}
-                                        >
-                                            <img src={editIcon} alt="Edit Icon" />
+                <>
+                    <table className='admin-finished-product-table'>
+                        <thead>
+                            <tr>
+                                <th>Product Code</th>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Size</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Availability</th>
+                                <th>Expiration</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                currentItems.map((product) => (
+                                    <tr 
+                                    key={product._id} 
+                                    className={`${product.isArchived ? 'archived-product' : ''} 
+                                    ${product.quantity < product.stockLevel ? 'low-quantity' : ''} 
+                                    ${product.quantity === 0 ? 'out-of-quantity' : ''}
+                                    ${product.isArchived && product.quantity < product.stockLevel ? 'low-quantity archived-product' : ''}`}
+                                    >
+                                        <td>{product.productCode}</td>
+                                        <td className='product-image-name'>
+                                            {
+                                                product.imageUrl ? (
+                                                    <img 
+                                                    src={optimizeCloudinaryUrl(product.imageUrl, 300, 300)} 
+                                                    alt={product.productName} 
+                                                    loading='lazy'
+                                                    />
+                                                ) : (
+                                                    <div className='placeholder-image'></div>
+                                                )
+                                            }
+                                            {' '}{product.productName}
+                                        </td>
+                                        <td>{product.category}</td>
+                                        <td>{product.sizeUnit?.slice(0, 1)} - {product.productSize}</td>
+                                        <td>{product.price}</td>
+                                        <td>{product.quantity}</td>
+                                        <td className={product.quantity > 0 ? (product.quantity > product.stockLevel ? 'in-stock' : 'low-stock') : 'out-of-stock'}>
+                                            {product.quantity > 0 ? (product.quantity > product.stockLevel ? 'In stock' : 'Low stock') : 'Out of stock'}
+                                        </td>
+                                        <td>{`${orderDate(product.expirationDate)}`}</td>
+                                        <td className='actions-tbody'>
+                                            <button className='button-edit-icon'
+                                            onClick={() => handleEditProductClick(product._id)}
+                                            >
+                                                <img src={editIcon} alt='Edit Icon' />
+                                                </button>
+                                                <button className='button-delete-icon' 
+                                            onClick={() => handleDeleteProductClick(product._id)}>
+                                                <img src={deleteIcon} alt='Delete Icon' />
                                             </button>
-                                            <button className='button-delete-icon' 
-                                        onClick={() => handleDeleteProductClick(product._id)}>
-                                            <img src={deleteIcon} alt="Delete Icon" />
-                                        </button>
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
+                                ))
+                            }
+                        </tbody>
+                    </table>
+                    
+                    {/*pagination controls */}
+                    <div className='pagination-controls'>
+                        <button onClick={prevPage} disabled={currentPage === 1}>Previous</button>
+                        {
+                            Array.from({ length: totalPages }, (_, i) => (
+                                <button 
+                                    key={i + 1}
+                                    onClick={() => paginate(i + 1)}
+                                    className={currentPage === i + 1 ? 'active-page' : ''}
+                                >
+                                    {i + 1}
+                                </button>
                             ))
                         }
-                    </tbody>
-                </table>
+                        <button onClick={nextPage} disabled={currentPage === totalPages}>Next</button>
+                    </div>
+                </>
             )
         }
     </div>
