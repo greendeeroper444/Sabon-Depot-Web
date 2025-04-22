@@ -30,9 +30,12 @@ function AdminDashboardPage() {
                 message: `${product.productName} (${product.sizeUnit.slice(0, 1)} - ${product.productSize}) is almost sold out! Only ${product.quantity} left.`,
                 imageUrl: product.imageUrl,
                 productName: product.productName,
+                category: product.category,
                 productCode: product.productCode,
+                sizeUnit: product.sizeUnit,
                 quantity: product.quantity,
                 stockLevel: product.stockLevel,
+                price: product.price,
 
             }));
     
@@ -200,34 +203,37 @@ function AdminDashboardPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {
-                                notifications.map((notification, index) => (
-                                    <tr key={index}
-                                    className={`${notification.quantity < notification.stockLevel ? 'low-stock-tr' : ''} 
-                                    ${notification.quantity === 0 ? 'out-of-stock-tr' : ''}`}
-                                    onClick={() =>
-                                        window.location.href =
-                                        'http://localhost:5173/admin/inventory/finished-product'
-                                    }
-                                    >
-                                        <td>{notification.productCode || 'N/A'}</td>
-                                        <td className='product-name'>
-                                            <img
-                                                src={`${notification.imageUrl}`}
-                                                alt={notification.productName || 'Product'}
-                                                className='notification-image'
-                                            />
-                                            {notification.productName}
-                                        </td>
-                                        <td>{notification.category || 'Example 3'}</td>
-                                        <td>{notification.size || 'M - 600ml'}</td>
-                                        <td>{notification.price || '300'}</td>
-                                        <td>{notification.quantity || '10'}</td>
-                                        <td className={`${notification.quantity < notification.stockLevel ? 'low-stock' : ''} 
-                                        ${notification.quantity === 0 ? 'out-of-stock' : ''}`}>Low stock</td>
-                                    </tr>
-                                ))
-                            }
+                        {
+                            notifications.map((notification, index) => (
+                                <tr key={index}
+                                className={`${notification.quantity < notification.stockLevel && notification.quantity > 0 ? 'low-stock-tr' : ''} 
+                                ${notification.quantity === 0 ? 'out-of-stock-tr' : ''}`}
+                                onClick={() =>
+                                    window.location.href =
+                                    'https://sabon-depot-system-1.onrender.com/admin/inventory/finished-product'
+                                }
+                                >
+                                    <td>{notification.productCode}</td>
+                                    <td className='product-name'>
+                                        <img
+                                            src={`${notification.imageUrl}`}
+                                            alt={notification.productName}
+                                            className='notification-image'
+                                        />
+                                        {notification.productName}
+                                    </td>
+                                    <td>{notification.category}</td>
+                                    <td>{notification.sizeUnit}</td>
+                                    <td>{notification.price}</td>
+                                    <td>{notification.quantity}</td>
+                                    <td className={`${notification.quantity < notification.stockLevel && notification.quantity > 0 ? 'low-stock' : ''} 
+                                    ${notification.quantity === 0 ? 'out-of-stock' : ''}`}>
+                                        {notification.quantity === 0 ? 'Out of Stock' : 
+                                        notification.quantity < notification.stockLevel ? 'Low Stock' : ''}
+                                    </td>
+                                </tr>
+                            ))
+                        }
                         </tbody>
                     </table>
                 </div>
