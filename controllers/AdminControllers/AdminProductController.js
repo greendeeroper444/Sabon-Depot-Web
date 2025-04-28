@@ -466,15 +466,56 @@ const getProductSummaryAdmin = async(req, res) => {
 //to get or notify the low quantity of product.
 const getOutOfStockProductsAdmin = async(req, res) => {
     try {
+        // console.log("Fetching all products...");
         //fetch all products
         const products = await ProductModel.find();
+        // console.log(`Total products fetched: ${products.length}`);
+        
+        //debug: Print first few products to verify data structure
+        // console.log("Sample products:", products.slice(0, 3).map(p => ({
+        //     productName: p.productName,
+        //     quantity: p.quantity,
+        //     stockLevel: p.stockLevel
+        // })));
 
-        //filter the products where quantity < stockLevel
-        const outOfStockProducts = products.filter(product => product.quantity < product.stockLevel);
-
-        return res.json(outOfStockProducts);
+        //create arrays for each type
+        const lowStockProducts = [];
+        const outOfStockProducts = [];
+        
+        //process each product
+        products.forEach(product => {
+            //convert to plain object
+            const productObj = product.toObject ? product.toObject() : JSON.parse(JSON.stringify(product));
+            
+            //check stock conditions with logging
+            // console.log(`Checking product: ${productObj.productName}, quantity: ${productObj.quantity}, stockLevel: ${productObj.stockLevel}`);
+            
+            if(productObj.quantity === 0){
+                console.log(`${productObj.productName} is OUT OF STOCK`);
+                outOfStockProducts.push({
+                    ...productObj,
+                    stockStatus: 'Out of Stock'
+                });
+            } 
+            else if(productObj.quantity <= productObj.stockLevel){
+                console.log(`${productObj.productName} is LOW STOCK`);
+                lowStockProducts.push({
+                    ...productObj,
+                    stockStatus: 'Low Stock'
+                });
+            }
+        });
+        
+        // console.log(`Out of stock products: ${outOfStockProducts.length}`);
+        // console.log(`Low stock products: ${lowStockProducts.length}`);
+        
+        //combine both arrays
+        const result = [...lowStockProducts, ...outOfStockProducts];
+        // console.log(`Total products to return: ${result.length}`);
+        
+        return res.json(result);
     } catch (error) {
-        console.error(error);
+        console.error("Error in getOutOfStockProductsAdmin:", error);
         return res.status(500).json({ 
             message: 'Server error' 
         });

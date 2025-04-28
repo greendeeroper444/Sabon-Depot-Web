@@ -193,7 +193,7 @@ function StaffDashboardPage() {
                         {
                             notifications.map((notification, index) => (
                                 <tr key={index}
-                                className={`${notification.quantity < notification.stockLevel && notification.quantity > 0 ? 'low-stock-tr' : ''} 
+                                className={`${notification.quantity <= notification.stockLevel && notification.quantity > 0 ? 'low-stock-tr' : ''} 
                                 ${notification.quantity === 0 ? 'out-of-stock-tr' : ''}`}
                                 onClick={() =>
                                     window.location.href =
@@ -213,10 +213,10 @@ function StaffDashboardPage() {
                                     <td>{notification.sizeUnit}</td>
                                     <td>{notification.price}</td>
                                     <td>{notification.quantity}</td>
-                                    <td className={`${notification.quantity < notification.stockLevel && notification.quantity > 0 ? 'low-stock' : ''} 
+                                    <td className={`${notification.quantity <= notification.stockLevel && notification.quantity > 0 ? 'low-stock' : ''} 
                                     ${notification.quantity === 0 ? 'out-of-stock' : ''}`}>
                                         {notification.quantity === 0 ? 'Out of Stock' : 
-                                        notification.quantity < notification.stockLevel ? 'Low Stock' : ''}
+                                        notification.quantity <= notification.stockLevel ? 'Low Stock' : ''}
                                     </td>
                                 </tr>
                             ))
