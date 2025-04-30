@@ -10,7 +10,9 @@ const {
     getDataUpdateCustomer, 
     requestPasswordReset, 
     resetPassword, 
-    resendOtpCustomer
+    resendOtpCustomer,
+    addMoreInfo,
+    removeInfo
 } = require('../../controllers/CustomerControllers/CustomerAuthController');
 
 
@@ -34,5 +36,7 @@ router.get('/getDataUpdateCustomer/:customerId', getDataUpdateCustomer);
 router.post('/requestPasswordReset', requestPasswordReset);
 router.get('/resetPassword/:token', resetPassword);
 
+router.post('/addMoreInfo/:customerId', addMoreInfo);
+router.post('/removeInfo/:customerId', removeInfo);
 
 module.exports = router;

@@ -554,6 +554,114 @@ const resetPassword = async(req, res) => {
 
 
 
+const addMoreInfo = async(req, res) => {
+    try {
+        const {customerId} = req.params;
+        const {type, value} = req.body;
+        
+        if(!mongoose.isValidObjectId(customerId)){
+            return res.status(400).json({ 
+                message: 'Invalid customer ID' 
+            });
+        }
+
+        if(!type || !value){
+            return res.status(400).json({ 
+                message: 'Type and value are required' 
+            });
+        }
+
+        //validate the type of information being added
+        if (!['moreEmailAddress', 'moreContactNumber', 'moreAddress'].includes(type)){
+            return res.status(400).json({ 
+                message: 'Invalid type. Must be moreEmailAddress, moreContactNumber, or moreAddress' 
+            });
+        }
+
+        //find the customer by ID
+        const customer = await CustomerAuthModel.findById(customerId);
+        if(!customer){
+            return res.status(404).json({ 
+                message: 'Customer not found' 
+            });
+        }
+
+        //add the new value to the appropriate array
+        customer[type].push(value);
+        
+        
+        await customer.save();
+        
+        return res.status(200).json({ 
+            message: 'Information added successfully', 
+            customer 
+        });
+    } catch (error) {
+        console.error('Error adding more information:', error);
+        return res.status(500).json({ 
+            message: 'Server error', 
+            error: error.message 
+        });
+    }
+};
+
+
+const removeInfo = async(req, res) => {
+    try {
+        const {customerId} = req.params;
+        const {type, index} = req.body;
+        
+        if(!mongoose.isValidObjectId(customerId)){
+            return res.status(400).json({ 
+                message: 'Invalid customer ID' 
+            });
+        }
+
+        if(!type || index === undefined){
+            return res.status(400).json({ 
+                message: 'Type and index are required' 
+            });
+        }
+
+        if(!['moreEmailAddress', 'moreContactNumber', 'moreAddress'].includes(type)){
+            return res.status(400).json({ 
+                message: 'Invalid type. Must be moreEmailAddress, moreContactNumber, or moreAddress' 
+            });
+        }
+
+        //find the customer by ID
+        const customer = await CustomerAuthModel.findById(customerId);
+        if(!customer){
+            return res.status(404).json({ 
+                message: 'Customer not found' 
+            });
+        }
+
+        //check if the index is valid
+        if(index < 0 || index >= customer[type].length){
+            return res.status(400).json({ 
+                message: 'Invalid index' 
+            });
+        }
+
+        //remove the item at the specified index
+        customer[type].splice(index, 1);
+      
+        await customer.save();
+        
+        return res.status(200).json({ 
+            message: 'Information removed successfully', 
+            customer 
+        });
+    } catch (error) {
+        console.error('Error removing information:', error);
+        return res.status(500).json({ 
+            message: 'Server error',
+            error: error.message 
+        });
+    }
+};
+
 module.exports = {
     registerCustomer,
     loginCustomer,
@@ -565,5 +673,7 @@ module.exports = {
     getDataUpdateCustomer,
     requestPasswordReset,
     resetPassword,
-    resendOtpCustomer
+    resendOtpCustomer,
+    addMoreInfo,
+    removeInfo
 }

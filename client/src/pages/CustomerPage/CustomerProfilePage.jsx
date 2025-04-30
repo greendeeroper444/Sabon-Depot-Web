@@ -27,6 +27,16 @@ function CustomerProfilePage() {
     const [profilePicture, setProfilePicture] = useState(customer?.profilePicture || '');
     const [previewImage, setPreviewImage] = useState('');
     const fileInputRef = useRef(null);
+    
+    //states for managing additional information
+    const [newEmail, setNewEmail] = useState('');
+    const [newContactNumber, setNewContactNumber] = useState('');
+    const [newAddress, setNewAddress] = useState('');
+    
+    //states for showing/hiding input forms
+    const [showEmailForm, setShowEmailForm] = useState(false);
+    const [showContactForm, setShowContactForm] = useState(false);
+    const [showAddressForm, setShowAddressForm] = useState(false);
 
     //pick and display profile picture
     const handleChange = (e) => {
@@ -52,6 +62,58 @@ function CustomerProfilePage() {
         fileInputRef.current.click();
     };
 
+    //function to add more information
+    const addMoreInformation = async (type, value) => {
+        if (!value.trim()) {
+            toast.error(`Please enter a valid ${type === 'moreEmailAddress' ? 'email address' : 
+                type === 'moreContactNumber' ? 'contact number' : 'address'}`);
+            return;
+        }
+
+        try {
+            const response = await axios.post(`/customerAuth/addMoreInfo/${customerId}`, {
+                type,
+                value
+            });
+            
+            //update customer context with new data
+            setCustomer(response.data.customer);
+            
+            //reset input field
+            if(type === 'moreEmailAddress'){
+                setNewEmail('');
+                setShowEmailForm(false);
+            }else if(type === 'moreContactNumber'){
+                setNewContactNumber('');
+                setShowContactForm(false);
+            }else if(type === 'moreAddress'){
+                setNewAddress('');
+                setShowAddressForm(false);
+            }
+            
+            toast.success(response.data.message);
+        } catch (error) {
+            console.error(error);
+            toast.error('Error adding information: ' + (error.response?.data.message || 'Internal server error'));
+        }
+    };
+
+    //function to remove information
+    const removeInformation = async (type, index) => {
+        try {
+            const response = await axios.post(`/customerAuth/removeInfo/${customerId}`, {
+                type,
+                index
+            });
+            
+            //update customer context with new data
+            setCustomer(response.data.customer);
+            toast.success(response.data.message);
+        } catch (error) {
+            console.error(error);
+            toast.error('Error removing information: ' + (error.response?.data.message || 'Internal server error'));
+        }
+    };
 
     //display profile
     useEffect(() => {
@@ -80,21 +142,19 @@ function CustomerProfilePage() {
             .catch(error => console.error(error));
     }, [customerId, setCustomer]);
 
-   
-
     //update profile
     const handleUpdateProfile = async() => {
         const formDataToSend = new FormData();
-        formDataToSend.append('firstName', formData.firstName);
-        formDataToSend.append('lastName', formData.lastName);
-        formDataToSend.append('middleInitial', formData.middleInitial);
-        formDataToSend.append('contactNumber', formData.contactNumber);
-        formDataToSend.append('province', formData.province);
-        formDataToSend.append('city', formData.city);
-        formDataToSend.append('barangay', formData.barangay);
-        formDataToSend.append('purokStreetSubdivision', formData.purokStreetSubdivision);
-        formDataToSend.append('emailAddress', formData.emailAddress);
-        formDataToSend.append('clientType', formData.clientType);
+            formDataToSend.append('firstName', formData.firstName);
+            formDataToSend.append('lastName', formData.lastName);
+            formDataToSend.append('middleInitial', formData.middleInitial);
+            formDataToSend.append('contactNumber', formData.contactNumber);
+            formDataToSend.append('province', formData.province);
+            formDataToSend.append('city', formData.city);
+            formDataToSend.append('barangay', formData.barangay);
+            formDataToSend.append('purokStreetSubdivision', formData.purokStreetSubdivision);
+            formDataToSend.append('emailAddress', formData.emailAddress);
+            formDataToSend.append('clientType', formData.clientType);
         if(profilePicture){
             formDataToSend.append('profilePicture', profilePicture);
         }
@@ -125,11 +185,9 @@ function CustomerProfilePage() {
             toast.success(response.data.message);
         } catch (error) {
             console.error(error);
-            alert('error updating profile: ' + (error.response?.data.message || 'Internal server error'));
+            toast.error('Error updating profile: ' + (error.response?.data.message || 'Internal server error'));
         }
     };
-
-
 
     const formatRelativeTime = (timestamp) => {
         const now = new Date();
@@ -250,6 +308,69 @@ function CustomerProfilePage() {
                         />
                     </div>
                 </div>
+                
+                {/* additional contact numbers section */}
+                <div className='additional-info-section'>
+                    {
+                        customer?.moreContactNumber && customer.moreContactNumber.length > 0 && (
+                            <div className='additional-info-list'>
+                                <h4>Additional Contact Numbers</h4>
+                                {
+                                    customer.moreContactNumber.map((number, index) => (
+                                        <div key={index} className='additional-info-item'>
+                                            <p>{number}</p>
+                                            <button 
+                                                className='remove-info-button'
+                                                onClick={() => removeInformation('moreContactNumber', index)}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        )
+                    }
+                    
+                    {
+                        showContactForm ? (
+                            <div className='add-info-form'>
+                                <input
+                                    type="text"
+                                    value={newContactNumber}
+                                    onChange={(e) => setNewContactNumber(e.target.value)}
+                                    placeholder="Enter additional contact number"
+                                />
+                                <div className='form-buttons'>
+                                    <button 
+                                        className='add-info-submit'
+                                        onClick={() => addMoreInformation('moreContactNumber', newContactNumber)}
+                                    >
+                                        Add
+                                    </button>
+                                    <button 
+                                        className='add-info-cancel'
+                                        onClick={() => {
+                                            setShowContactForm(false);
+                                            setNewContactNumber('');
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className='add-contact-number'>
+                                <button 
+                                    className='add-contact-button'
+                                    onClick={() => setShowContactForm(true)}
+                                >
+                                    +Add Contact Number
+                                </button>
+                            </div>
+                        )
+                    }
+                </div>
 
                 <div className='field-group'>
                     <div className='field'>
@@ -287,8 +408,67 @@ function CustomerProfilePage() {
                     </div>
                 </div>
 
-                <div className='add-contact-number'>
-                    <button className='add-contact-button'>+Add Contact Number</button>
+                {/* additional addresses section */}
+                <div className='additional-info-section'>
+                    {
+                        customer?.moreAddress && customer.moreAddress.length > 0 && (
+                            <div className='additional-info-list'>
+                                <h4>Additional Addresses</h4>
+                                {
+                                    customer.moreAddress.map((address, index) => (
+                                        <div key={index} className='additional-info-item'>
+                                            <p>{address}</p>
+                                            <button 
+                                                className='remove-info-button'
+                                                onClick={() => removeInformation('moreAddress', index)}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        )
+                    }
+                    
+                    {
+                        showAddressForm ? (
+                            <div className='add-info-form'>
+                                <textarea
+                                    value={newAddress}
+                                    onChange={(e) => setNewAddress(e.target.value)}
+                                    placeholder="Enter additional address"
+                                    rows={3}
+                                />
+                                <div className='form-buttons'>
+                                    <button 
+                                        className='add-info-submit'
+                                        onClick={() => addMoreInformation('moreAddress', newAddress)}
+                                    >
+                                        Add
+                                    </button>
+                                    <button 
+                                        className='add-info-cancel'
+                                        onClick={() => {
+                                            setShowAddressForm(false);
+                                            setNewAddress('');
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className='add-contact-number'>
+                                <button 
+                                    className='add-contact-button'
+                                    onClick={() => setShowAddressForm(true)}
+                                >
+                                    +Add Address
+                                </button>
+                            </div>
+                        )
+                    }
                 </div>
 
                 <div className='email-section'>
@@ -304,11 +484,68 @@ function CustomerProfilePage() {
                             )
                         }
                     </div>
-                    <div className='add-email-address'>
-                        <button className='add-email-button'>+Add Email Address</button>
-                    </div>
+                    
+                    {/* additional email addresses section */}
+                    {
+                        customer?.moreEmailAddress && customer.moreEmailAddress.length > 0 && (
+                            <div className='additional-info-list'>
+                                <h4>Additional Email Addresses</h4>
+                                {
+                                    customer.moreEmailAddress.map((email, index) => (
+                                        <div key={index} className='additional-info-item'>
+                                            <p>{email}</p>
+                                            <button 
+                                                className='remove-info-button'
+                                                onClick={() => removeInformation('moreEmailAddress', index)}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        )
+                    }
+                    
+                    {
+                        showEmailForm ? (
+                            <div className='add-info-form'>
+                                <input
+                                    type="email"
+                                    value={newEmail}
+                                    onChange={(e) => setNewEmail(e.target.value)}
+                                    placeholder="Enter additional email address"
+                                />
+                                <div className='form-buttons'>
+                                    <button 
+                                        className='add-info-submit'
+                                        onClick={() => addMoreInformation('moreEmailAddress', newEmail)}
+                                    >
+                                        Add
+                                    </button>
+                                    <button 
+                                        className='add-info-cancel'
+                                        onClick={() => {
+                                            setShowEmailForm(false);
+                                            setNewEmail('');
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className='add-email-address'>
+                                <button 
+                                    className='add-email-button'
+                                    onClick={() => setShowEmailForm(true)}
+                                >
+                                    +Add Email Address
+                                </button>
+                            </div>
+                        )
+                    }
                 </div>
-
             </div>
         </div>
 

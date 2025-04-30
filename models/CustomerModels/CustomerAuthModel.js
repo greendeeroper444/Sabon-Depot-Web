@@ -59,6 +59,18 @@ const CustomerAuthSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    moreEmailAddress: {
+        type: [String],
+        default: []
+    },
+    moreContactNumber: {
+        type: [String],
+        default: []
+    },
+    moreAddress: {
+        type: [String],
+        default: []
+    },
     // isNewCustomer: { //new field to track if customer is newly registered
     //     type: Boolean,
     //     default: true
@@ -72,6 +84,16 @@ const CustomerAuthSchema = new mongoose.Schema({
     resetPasswordExpires: Date
 })
 
-
+// db.customers.updateMany(
+//     {},
+//     {
+//       $set: {
+//         moreEmailAddress: "",
+//         moreContactNumber: "",
+//         moreAddress: ""
+//       }
+//     }
+//   )
+  
 const CustomerAuthModel = mongoose.model('Customer', CustomerAuthSchema);
 module.exports = CustomerAuthModel;
