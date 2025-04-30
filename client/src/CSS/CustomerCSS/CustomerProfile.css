@@ -41,7 +41,7 @@
     color: #888;
 }
   
-.customer-profile-container .edit-button{
+.customer-profile-container .save-button{
     background-color: #2CBB1F;
     color: white;
     border: none;
@@ -51,7 +51,7 @@
     margin-left: auto;
 }
   
-.customer-profile-container .edit-button:hover{
+.customer-profile-container .save-button:hover{
     background-color: #28a428;
 }
   

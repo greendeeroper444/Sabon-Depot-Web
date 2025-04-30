@@ -245,7 +245,9 @@ function CustomerProfilePage() {
                         }
                     </div>
                 </div>
-                <button className='edit-button' onClick={handleUpdateProfile}>Save</button>
+                <br />
+                <br />
+                <button className='save-button' onClick={handleUpdateProfile}>Save</button>
             </div>
             
             <div className='customer-profile-fields'>
@@ -552,7 +554,7 @@ function CustomerProfilePage() {
         <CustomerTopFooterComponent />
 
         <CustomerFooterComponent />
-    </div>
+    </div>  
   )
 }
 
