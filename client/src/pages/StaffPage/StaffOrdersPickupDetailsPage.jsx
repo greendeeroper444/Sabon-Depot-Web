@@ -237,15 +237,15 @@ function StaffOrdersPickupDetailsPage() {
                     {/* <img src={editIcon} alt='Edit Icon' className='edit-icon' /> */}
                 </h3>
                 <p><strong>Placed on:</strong> {orderDate(order.createdAt)}</p>
-                {/* <p><strong>Updated:</strong> {new Date(order.updatedAt)()}</p> */}
+                {/* <p><strong>Updated:</strong> {(order.updatedAt)}</p> */}
                 {
                     order.readyDate && (
-                        <p><strong>Ready on:</strong> {orderDate(new Date(order.readyDate)())}</p>
+                        <p><strong>Ready on:</strong> {orderDate(order.readyDate)}</p>
                     )
                 }
                 {
                     order.pickedUpDate && (
-                        <p><strong>Paid on:</strong> {orderDate(new Date(order.pickedUpDate)())}</p>
+                        <p><strong>Paid on:</strong> {orderDate(order.pickedUpDate)}</p>
                     )
                 }
                 {

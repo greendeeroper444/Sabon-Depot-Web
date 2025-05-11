@@ -239,7 +239,7 @@ function AdminOrdersPickupDetailsPage() {
                 </h3>
                 <p><strong>Placed on:</strong> {orderDate(order.createdAt)}</p>
                 {/* <p><strong>Updated:</strong> {new Date(order.updatedAt).toLocaleDateString()}</p> */}
-                {
+                {/* {
                     order.readyDate && (
                         <p><strong>Ready on:</strong> {orderDate(new Date(order.readyDate).toLocaleDateString())}</p>
                     )
@@ -247,6 +247,21 @@ function AdminOrdersPickupDetailsPage() {
                 {
                     order.pickedUpDate && (
                         <p><strong>Paid on:</strong> {orderDate(new Date(order.pickedUpDate).toLocaleDateString())}</p>
+                    )
+                } */}
+                {
+                    order.readyDate && (
+                        <p><strong>Ready on:</strong> {orderDate(order.readyDate)}</p>
+                    )
+                }
+                {
+                    order.pickedUpDate && (
+                        <p><strong>Paid on:</strong> {orderDate(order.pickedUpDate)}</p>
+                    )
+                }
+                {
+                    !order.pickedUpDate && (
+                        <p><strong>Status:</strong> Not paid yet</p>
                     )
                 }
             </div>
