@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { StaffContextProvider } from '../../contexts/StaffContexts/StaffAuthContext'
+import { matchPath, useLocation } from 'react-router-dom'
 import StaffNavbarComponent from '../components/StaffComponents/StaffNavbarComponent'
 import StaffSidebarComponent from '../components/StaffComponents/StaffSidebarComponent'
 import { Route, Routes } from 'react-router-dom'
@@ -24,11 +25,73 @@ import StaffRefillProductPage from '../pages/StaffPage/StaffRefillProductPage'
 import InventoryReportPage from '../pages/StaffPage/InventoryReportPage'
 
 function StaffRoutes() {
-  return (
-    <StaffContextProvider>
-        <StaffNavbarComponent />
-        <StaffSidebarComponent />
-        <div className='staff-main-container'>
+    const location = useLocation();
+    //state to track if sidebar is collapsed
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    //state to track mobile sidebar visibility
+    const [mobileSidebarVisible, setMobileSidebarVisible] = useState(false);
+    
+    //check if current screen size is mobile
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    //handler to receive sidebar state from the sidebar component
+    const handleSidebarStateChange = (isCollapsed) => {
+        setSidebarCollapsed(isCollapsed);
+    };
+
+    //handler to receive mobile sidebar visibility state
+    const handleMobileSidebarToggle = (isVisible) => {
+        setMobileSidebarVisible(isVisible);
+    };
+
+    //handle window resize for responsive behavior
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+            //auto-hide mobile sidebar when resizing to desktop
+            if (window.innerWidth > 768) {
+                setMobileSidebarVisible(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    //check if the current route matches the settings path
+    const isSettingsPage = matchPath('/staff/settings/:adminId', location.pathname);
+
+    //dynamic class for main container based on sidebar state
+    const getMainContainerClass = () => {
+        if (isMobile) {
+            return 'admin-main-container mobile';
+        } else {
+            return `admin-main-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`;
+        }
+    };
+
+    return (
+        <StaffContextProvider>
+            {/* conditionally render StaffNavbarComponent */}
+            {
+                !isSettingsPage && (
+                    <StaffNavbarComponent 
+                        toggleMobileSidebar={() => setMobileSidebarVisible(!mobileSidebarVisible)} 
+                        isMobile={isMobile}
+                    />
+                )
+            }
+            
+            {/* new sidebar component with state handlers */}
+            <StaffSidebarComponent 
+                onSidebarStateChange={handleSidebarStateChange} 
+                onMobileSidebarToggle={handleMobileSidebarToggle}
+                mobileOpen={mobileSidebarVisible}
+            />
+            
+            <div className={getMainContainerClass()}>
             <Routes>
                 <Route path='/staff/dashboard' element={<StaffDashboardPage />} />
                 {/* <Route path='/staff/home' element={<StaffHomePage />} /> */}
@@ -51,9 +114,9 @@ function StaffRoutes() {
                 <Route path='/staff/accounts' element={<StaffAccountsPage />} />
                 <Route path='/staff/reports/inventory-report' element={<InventoryReportPage/>} />
             </Routes>
-        </div>
-    </StaffContextProvider>
-  )
+            </div>
+        </StaffContextProvider>
+    )
 }
 
 export default StaffRoutes

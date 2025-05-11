@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import '../../CSS/AdminCSS/AdminSidebar.css';
 import { NavLink } from 'react-router-dom';
 import logoDepot from '../../assets/icons/logo-depot-3-circle.png';
@@ -14,164 +14,270 @@ import quickSalesIconWhite from '../../assets/admin/adminicons/quick-sales-white
 import settingsIcon from '../../assets/admin/adminicons/settings.png';
 import settingsIconWhite from '../../assets/admin/adminicons/settings-white.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons';
+import { faAngleDown, faAngleUp, faBars, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { AdminContext } from '../../../contexts/AdminContexts/AdminAuthContext';
 
-function AdminSidebarComponent() {
+function AdminSidebarComponent({onSidebarStateChange, onMobileSidebarToggle, mobileOpen = false}) {
     const {admin} = useContext(AdminContext);
     const [isDropdownOpenInventory, setIsDropdownOpenInventory] = useState(false);
     const [isDropdownOpenReports, setIsDropdownOpenReports] = useState(false);
     const [isDropdownTransaction, setIsDropdownTransaction] = useState(false);
     const [isDropdownOpenQuickSales, setIsDropdownOpenQuickSales] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [mobileSidebarVisible, setMobileSidebarVisible] = useState(mobileOpen);
+
+    //update state when prop changes
+    useEffect(() => {
+        setMobileSidebarVisible(mobileOpen);
+    }, [mobileOpen]);
+
+    useEffect(() => {
+        const handleResize = () => {
+            const newIsMobile = window.innerWidth <= 768;
+            setIsMobile(newIsMobile);
+            
+            //reset mobile visibility on screen size change
+            if (!newIsMobile && mobileSidebarVisible) {
+                setMobileSidebarVisible(false);
+                if (onMobileSidebarToggle) onMobileSidebarToggle(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [mobileSidebarVisible, onMobileSidebarToggle]);
+
+    //notify parent component when sidebar state changes
+    useEffect(() => {
+        if (onSidebarStateChange) {
+            onSidebarStateChange(collapsed);
+        }
+    }, [collapsed, onSidebarStateChange]);
+
+    const toggleSidebar = () => {
+        setCollapsed(!collapsed);
+    };
 
     const toggleDropdownTransaction = () => {
-        setIsDropdownTransaction(!isDropdownTransaction);
+        if (collapsed) {
+            setCollapsed(false);
+            setTimeout(() => {
+                setIsDropdownTransaction(!isDropdownTransaction);
+            }, 300);
+        } else {
+            setIsDropdownTransaction(!isDropdownTransaction);
+        }
     };
+
     const toggleDropdownInventory = () => {
-        setIsDropdownOpenInventory(!isDropdownOpenInventory);
+        if (collapsed) {
+            setCollapsed(false);
+            setTimeout(() => {
+                setIsDropdownOpenInventory(!isDropdownOpenInventory);
+            }, 300);
+        } else {
+            setIsDropdownOpenInventory(!isDropdownOpenInventory);
+        }
     };
 
     const toggleDropdownReports = () => {
-        setIsDropdownOpenReports(!isDropdownOpenReports);
-    };
-    const toggleDropdownQuickSales = () => {
-        setIsDropdownOpenQuickSales(!isDropdownOpenQuickSales);
+        if (collapsed) {
+            setCollapsed(false);
+            setTimeout(() => {
+                setIsDropdownOpenReports(!isDropdownOpenReports);
+            }, 300);
+        } else {
+            setIsDropdownOpenReports(!isDropdownOpenReports);
+        }
     };
 
-  return (
-    <div className='admin-sidebar original-admin-sidebar'>
-        <div className='admin-sidebar-header'>
-            <img src={logoDepot} alt="Logo" className='logo' />
-            <h2>Admin</h2>
-        </div>
-        <ul className='admin-sidebar-list'>
-            <li>
-                <NavLink to='/admin/dashboard' className='admin-sidebar-item' activeClassName='active'>
-                    <img src={dashboardIcon} alt="Dashboard" className='sidebar-icon' />
-                    <img src={dashboardIconWhite} alt="Orders" className='sidebar-icon-active' />
-                    <span>Dashboard</span>
-                </NavLink>
-            </li>
-            <li>
-                <div className='admin-sidebar-item' onClick={toggleDropdownTransaction}>
-                    <img src={ordersIcon} alt="Inventory" className='sidebar-icon' />
-                    <span>Transaction</span>
-                    <FontAwesomeIcon icon={isDropdownTransaction ? faAngleUp : faAngleDown} />
+    const toggleDropdownQuickSales = () => {
+        if (collapsed) {
+            setCollapsed(false);
+            setTimeout(() => {
+                setIsDropdownOpenQuickSales(!isDropdownOpenQuickSales);
+            }, 300);
+        } else {
+            setIsDropdownOpenQuickSales(!isDropdownOpenQuickSales);
+        }
+    };
+
+    //toggle mobile sidebar and notify parent
+    const toggleMobileSidebar = () => {
+        const newState = !mobileSidebarVisible;
+        setMobileSidebarVisible(newState);
+        if (onMobileSidebarToggle) {
+            onMobileSidebarToggle(newState);
+        }
+    };
+
+    return (
+        <>
+            {/* mobile Menu Toggle Button */}
+            <div className='mobile-toggle-button' onClick={toggleMobileSidebar}>
+                <FontAwesomeIcon icon={faBars} />
+            </div>
+
+            {/* sidebar */}
+            <div className={`admin-sidebar ${collapsed ? 'collapsed' : ''} ${isMobile ? 'mobile' : ''} ${mobileSidebarVisible ? 'mobile-open' : ''}`}>
+                <div className='sidebar-collapse-btn' onClick={toggleSidebar}>
+                    <FontAwesomeIcon icon={collapsed ? faChevronRight : faChevronLeft} />
                 </div>
-                {
-                    isDropdownTransaction && (
-                        <div className='admin-sidebar-item-dropdown'>
-                            <NavLink to='/admin/orders' className='admin-sidebar-item' activeClassName='active'>
-                                <span>Online</span>
-                            </NavLink>
-                            <NavLink to='/admin/orders-pickup' className='admin-sidebar-item' activeClassName='active'>
-                                <span>Pick Up</span>
-                            </NavLink>
-                            <NavLink to='/admin/walkins' className='admin-sidebar-item' activeClassName='active'>
-                                <span>Walkin</span>
-                            </NavLink>
-                            <NavLink to='/admin/refills' className='admin-sidebar-item' activeClassName='active'>
-                                <span>Refill</span>
-                            </NavLink>
-                        </div>
-                    )
-                }
-            </li>
-            {/* <li>
-                <NavLink to='/admin/orders' className='admin-sidebar-item' activeClassName='active'>
-                    <img src={ordersIcon} alt="Orders" className='sidebar-icon' />
-                    <img src={ordersIconWhite} alt="Orders" className='sidebar-icon-active' />
-                    <span>Orders</span>
-                </NavLink>
-            </li> */}
-            <li>
-                <div className='admin-sidebar-item' onClick={toggleDropdownInventory}>
-                    <img src={inventoryIcon} alt="Inventory" className='sidebar-icon' />
-                    <span>Inventory</span>
-                    <FontAwesomeIcon icon={isDropdownOpenInventory ? faAngleUp : faAngleDown} />
+                
+                <div className='admin-sidebar-header'>
+                    <img src={logoDepot} alt='Logo' className='logo' />
+                    {!collapsed && <h2>Admin</h2>}
                 </div>
-                {
-                    isDropdownOpenInventory && (
-                        <div className='admin-sidebar-item-dropdown'>
-                            <NavLink to='/admin/inventory/finished-product' className='admin-sidebar-item' activeClassName='active'>
-                                <span>Finished Goods</span>
-                            </NavLink>
-                            <NavLink to='/admin/inventory/refill-product' className='admin-sidebar-item' activeClassName='active'>
-                                <span>Refill Products</span>
-                            </NavLink>
+                
+                <ul className='admin-sidebar-list'>
+                    <li>
+                        <NavLink 
+                            to='/admin/dashboard' 
+                            className='admin-sidebar-item' 
+                            activeClassName='active'
+                            data-tooltip='Dashboard'
+                        >
+                            <img src={dashboardIcon} alt='Dashboard' className='sidebar-icon' />
+                            <img src={dashboardIconWhite} alt='Dashboard' className='sidebar-icon-active' />
+                            {!collapsed && <span>Dashboard</span>}
+                        </NavLink>
+                    </li>
+                    <li>
+                        <div 
+                            className='admin-sidebar-item' 
+                            onClick={toggleDropdownTransaction}
+                            data-tooltip='Transaction'
+                        >
+                            <img src={ordersIcon} alt='Transaction' className='sidebar-icon' />
+                            {!collapsed && <span>Transaction</span>}
+                            {!collapsed && <FontAwesomeIcon className='dropdown-icon' icon={isDropdownTransaction ? faAngleUp : faAngleDown} />}
                         </div>
-                    )
-                }
-            </li>
-            {/* <li>
-                <NavLink to='/admin/inventory/finished-product' className='admin-sidebar-item' activeClassName='active'>
-                    <img src={inventoryIcon} alt="Inventory" className='sidebar-icon' />
-                    <img src={inventoryIcon} alt="Inventory" className='sidebar-icon-active' />
-                    <span>Inventory</span>
-                </NavLink>
-            </li> */}
-            {/* <li>
-                <NavLink to='/admin/quick-sales' className='admin-sidebar-item' activeClassName='active'>
-                    <img src={quickSalesIcon} alt="Accounts" className='sidebar-icon' />
-                    <img src={quickSalesIconWhite} alt="Acounts" className='sidebar-icon-active' />
-                    <span>Quick Sales</span>
-                </NavLink>
-            </li> */}
-             <li>
-                <div className='admin-sidebar-item' onClick={toggleDropdownQuickSales}>
-                    <img src={quickSalesIcon} alt="Inventory" className='sidebar-icon' />
-                    <span>Sales</span>
-                    <FontAwesomeIcon icon={isDropdownOpenQuickSales ? faAngleUp : faAngleDown} />
-                </div>
-                {
-                    isDropdownOpenQuickSales && (
-                        <div className='admin-sidebar-item-dropdown'>
-                            <NavLink to='/admin/quicksales/sales-walkin' className='admin-sidebar-item' activeClassName='active'>
-                                <span>Sales Walkin</span>
-                            </NavLink>
-                            <NavLink to='/admin/quicksales/sales-refill' className='admin-sidebar-item' activeClassName='active'>
-                                <span>Sales Refill</span>
-                            </NavLink>
+                        {
+                            !collapsed && isDropdownTransaction && (
+                                <div className='admin-sidebar-item-dropdown'>
+                                    <NavLink to='/admin/orders' className='admin-sidebar-item sub-item' activeClassName='active'>
+                                        <span>Online</span>
+                                    </NavLink>
+                                    <NavLink to='/admin/orders-pickup' className='admin-sidebar-item sub-item' activeClassName='active'>
+                                        <span>Pick Up</span>
+                                    </NavLink>
+                                    <NavLink to='/admin/walkins' className='admin-sidebar-item sub-item' activeClassName='active'>
+                                        <span>Walkin</span>
+                                    </NavLink>
+                                    <NavLink to='/admin/refills' className='admin-sidebar-item sub-item' activeClassName='active'>
+                                        <span>Refill</span>
+                                    </NavLink>
+                                </div>
+                            )
+                        }
+                    </li>
+                    <li>
+                        <div 
+                            className='admin-sidebar-item' 
+                            onClick={toggleDropdownInventory}
+                            data-tooltip='Inventory'
+                        >
+                            <img src={inventoryIcon} alt='Inventory' className='sidebar-icon' />
+                            {!collapsed && <span>Inventory</span>}
+                            {!collapsed && <FontAwesomeIcon className='dropdown-icon' icon={isDropdownOpenInventory ? faAngleUp : faAngleDown} />}
                         </div>
-                    )
-                }
-            </li>
-            <li>
-                <NavLink to='/admin/accounts' className='admin-sidebar-item' activeClassName='active'>
-                    <img src={accountsIcon} alt="Accounts" className='sidebar-icon' />
-                    <img src={accountsIconWhite} alt="Acounts" className='sidebar-icon-active' />
-                    <span>Accounts</span>
-                </NavLink>
-            </li>
-            <li>
-                <div className='admin-sidebar-item' onClick={toggleDropdownReports}>
-                    <img src={reportsIcon} alt="Reports" className='sidebar-icon' />
-                    <span>Reports</span>
-                    <FontAwesomeIcon icon={isDropdownOpenReports ? faAngleUp : faAngleDown} />
-                </div>
-                {
-                    isDropdownOpenReports && (
-                        <div className='admin-sidebar-item-dropdown'>
-                            <NavLink to='/admin/reports/inventory-report' className='admin-sidebar-item' activeClassName='active'>
-                                <span>Inventory Report</span>
-                            </NavLink>
-                            <NavLink to='/admin/reports/sales-report' className='admin-sidebar-item' activeClassName='active'>
-                                <span>Sales Report</span>
-                            </NavLink>
+                        {
+                            !collapsed && isDropdownOpenInventory && (
+                                <div className='admin-sidebar-item-dropdown'>
+                                    <NavLink to='/admin/inventory/finished-product' className='admin-sidebar-item sub-item' activeClassName='active'>
+                                        <span>Finished Goods</span>
+                                    </NavLink>
+                                    <NavLink to='/admin/inventory/refill-product' className='admin-sidebar-item sub-item' activeClassName='active'>
+                                        <span>Refill Products</span>
+                                    </NavLink>
+                                </div>
+                            )
+                        }
+                    </li>
+                    <li>
+                        <div 
+                            className='admin-sidebar-item' 
+                            onClick={toggleDropdownQuickSales}
+                            data-tooltip='Sales'
+                        >
+                            <img src={quickSalesIcon} alt='Sales' className='sidebar-icon' />
+                            {!collapsed && <span>Sales</span>}
+                            {!collapsed && <FontAwesomeIcon className='dropdown-icon' icon={isDropdownOpenQuickSales ? faAngleUp : faAngleDown} />}
                         </div>
-                    )
-                }
-            </li>
-            <li>
-                <NavLink to={`/admin/settings/${admin?._id}`} className='admin-sidebar-item' activeClassName='active'>
-                    <img src={settingsIcon} alt="Accounts" className='sidebar-icon' />
-                    <img src={settingsIconWhite} alt="Acounts" className='sidebar-icon-active' />
-                    <span>Settings</span>
-                </NavLink>
-            </li>
-        </ul>
-    </div>
-  )
+                        {
+                            !collapsed && isDropdownOpenQuickSales && (
+                                <div className='admin-sidebar-item-dropdown'>
+                                    <NavLink to='/admin/quicksales/sales-walkin' className='admin-sidebar-item sub-item' activeClassName='active'>
+                                        <span>Sales Walkin</span>
+                                    </NavLink>
+                                    <NavLink to='/admin/quicksales/sales-refill' className='admin-sidebar-item sub-item' activeClassName='active'>
+                                        <span>Sales Refill</span>
+                                    </NavLink>
+                                </div>
+                            )
+                        }
+                    </li>
+                    <li>
+                        <NavLink 
+                            to='/admin/accounts' 
+                            className='admin-sidebar-item' 
+                            activeClassName='active'
+                            data-tooltip='Accounts'
+                        >
+                            <img src={accountsIcon} alt='Accounts' className='sidebar-icon' />
+                            <img src={accountsIconWhite} alt='Accounts' className='sidebar-icon-active' />
+                            {!collapsed && <span>Accounts</span>}
+                        </NavLink>
+                    </li>
+                    <li>
+                        <div 
+                            className='admin-sidebar-item' 
+                            onClick={toggleDropdownReports}
+                            data-tooltip='Reports'
+                        >
+                            <img src={reportsIcon} alt='Reports' className='sidebar-icon' />
+                            {!collapsed && <span>Reports</span>}
+                            {!collapsed && <FontAwesomeIcon className='dropdown-icon' icon={isDropdownOpenReports ? faAngleUp : faAngleDown} />}
+                        </div>
+                        {
+                            !collapsed && isDropdownOpenReports && (
+                                <div className='admin-sidebar-item-dropdown'>
+                                    <NavLink to='/admin/reports/inventory-report' className='admin-sidebar-item sub-item' activeClassName='active'>
+                                        <span>Inventory Report</span>
+                                    </NavLink>
+                                    <NavLink to='/admin/reports/sales-report' className='admin-sidebar-item sub-item' activeClassName='active'>
+                                        <span>Sales Report</span>
+                                    </NavLink>
+                                </div>
+                            )
+                        }
+                    </li>
+                    <li>
+                        <NavLink 
+                            to={`/admin/settings/${admin?._id}`} 
+                            className='admin-sidebar-item' 
+                            activeClassName='active'
+                            data-tooltip='Settings'
+                        >
+                            <img src={settingsIcon} alt='Settings' className='sidebar-icon' />
+                            <img src={settingsIconWhite} alt='Settings' className='sidebar-icon-active' />
+                            {!collapsed && <span>Settings</span>}
+                        </NavLink>
+                    </li>
+                </ul>
+            </div>
+            
+            {/* backdrop for mobile */}
+            {
+                isMobile && mobileSidebarVisible && (
+                    <div className='sidebar-backdrop' onClick={toggleMobileSidebar}></div>
+                )
+            }
+        </>
+    )
 }
 
 export default AdminSidebarComponent
