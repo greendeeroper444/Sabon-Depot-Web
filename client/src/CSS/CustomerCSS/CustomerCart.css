@@ -60,6 +60,7 @@
 .customer-cart-content .product-info{
     display: flex;
     align-items: center;
+    justify-content: center;
 }
   
 .customer-cart-content .product-image{

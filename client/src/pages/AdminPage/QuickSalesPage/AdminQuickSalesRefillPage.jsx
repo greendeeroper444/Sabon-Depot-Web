@@ -63,18 +63,6 @@ function AdminQuickSalesRefillPage() {
                         <span>Showing {refillProducts.length} results</span>
                     </div>
                 </div>
-                {/* select of walkin or refilling */}
-                {/* <div>
-                    <select
-                    name="orderType"
-                    id="orderType"
-                    value={orderType}
-                    onChange={(e) => setOrderType(e.target.value)}
-                    >
-                        <option value="Walkin">Walkin Order</option>
-                        <option value="Refilling">Refilling</option>
-                    </select>
-                </div> */}
                 <div>
                    
                 </div>

@@ -232,7 +232,7 @@ function StaffSidebarComponent({onSidebarStateChange, onMobileSidebarToggle, mob
                             {!collapsed && <span>Accounts</span>}
                         </NavLink>
                     </li>
-                    <li>
+                    {/* <li>
                         <div 
                             className='admin-sidebar-item' 
                             onClick={toggleDropdownReports}
@@ -254,7 +254,7 @@ function StaffSidebarComponent({onSidebarStateChange, onMobileSidebarToggle, mob
                                 </div>
                             )
                         }
-                    </li>
+                    </li> */}
                     <li>
                         <NavLink 
                             to={`/admin/settings/${admin?._id}`} 

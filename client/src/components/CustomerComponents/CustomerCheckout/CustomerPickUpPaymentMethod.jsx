@@ -211,6 +211,19 @@ const CustomerPickUpPaymentMethod = ({
         return tomorrow;
     };
 
+    //format the selected date for display
+    const formatSelectedDate = () => {
+        if (!localSelectedDate) return "";
+        
+        //actual selected date object directly
+        return localSelectedDate.toLocaleDateString(undefined, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    };
+
   return (
     <div className='customer-pickup-payment-container'>
         <div className='customer-pickup-payment-content'>
@@ -252,14 +265,7 @@ const CustomerPickUpPaymentMethod = ({
             {
                 localSelectedDate && localSelectedTime && (
                     <div className='time-display'>
-                        {
-                            localSelectedDate.toLocaleDateString(undefined, {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                            })
-                        }
+                        {formatSelectedDate()}
                         <br />
                         {localSelectedTime}
                     </div>

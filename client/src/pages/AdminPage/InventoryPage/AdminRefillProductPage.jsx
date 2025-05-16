@@ -15,6 +15,7 @@ function AdminRefillProductPage() {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [refillProducts, setRefillProducts] = useState([]); 
     const [productIdToDelete, setProductIdToDelete] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const [selectedCategory, setSelectedCategory] = useState('');
     const categories = [...new Set(refillProducts.map((product) => product.category))];
@@ -23,9 +24,13 @@ function AdminRefillProductPage() {
         setSelectedCategory(event.target.value);
     };
 
-    const filteredRefillProducts = selectedCategory
-    ? refillProducts.filter((product) => product.category === selectedCategory)
-    : refillProducts;
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const filteredRefillProducts = refillProducts
+        .filter(product => selectedCategory ? product.category === selectedCategory : true)
+        .filter(product => product.productName.toLowerCase().includes(searchTerm.toLowerCase()));
 
     useEffect(() => {
         fetchRefillProducts();
@@ -40,6 +45,7 @@ function AdminRefillProductPage() {
             setError('Failed to load products');
         }
     };
+    
     const handleAddProductClick = () => {
         setIsModalOpen(true);
     };
@@ -67,12 +73,12 @@ function AdminRefillProductPage() {
         setProductIdToDelete(productId);
         setIsDeleteModalOpen(true);
     };
+    
     const handleCloseDeleteModal = () => {
         setIsDeleteModalOpen(false);
         setProductIdToDelete(null);
     };
     
-    //delete function
     const handleConfirmDelete = async() => {
         try {
             const response = await axios.delete(`/adminRefillProduct/deleteRefillProductAdmin/${productIdToDelete}`);
@@ -84,30 +90,59 @@ function AdminRefillProductPage() {
             console.log(error)
         }
     };
+
+    const getStatusLabel = (level) => {
+        if (level >= 75) return { text: 'Normal', className: 'status-normal' };
+        if (level >= 50) return { text: 'Medium', className: 'status-medium' };
+        return {text: 'Low', className: 'status-low'};
+    };
+
+    const getProductColor = (product) => {
+        //use the product's color attribute from the database
+        if (product.color) {
+            //color is stored as a hex string (e.g., '#ff0000')
+            return product.color;
+        }
+        
+        //fallback default color if no color is specified
+        return '#23a94d';
+    };
+
   return (
-    <div className='admin-finished-product-container'>
+    <div className='admin-inventory-container'>
         <AdminModalRefillProductsAddComponent
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal}
-        fetchRefillProducts={fetchRefillProducts}
+            isOpen={isModalOpen} 
+            onClose={handleCloseModal}
+            fetchRefillProducts={fetchRefillProducts}
         />
 
         <AdminModalRefillProductsDeleteComponent
-        isOpen={isDeleteModalOpen} 
-        onClose={handleCloseDeleteModal} 
-        onConfirm={handleConfirmDelete} 
+            isOpen={isDeleteModalOpen} 
+            onClose={handleCloseDeleteModal} 
+            onConfirm={handleConfirmDelete} 
         />
 
         <AdminModalRefillProductsEditComponent
-        isOpen={isEditModalOpen} 
-        selectedProduct={selectedProduct}
-        onClose={handleCloseEditModal}
-        fetchRefillProducts={fetchRefillProducts}
+            isOpen={isEditModalOpen} 
+            selectedProduct={selectedProduct}
+            onClose={handleCloseEditModal}
+            fetchRefillProducts={fetchRefillProducts}
         />
 
-        <div className='admin-finished-product-controls'>
-            <div>Refill Products</div>
-            <div>
+        <div className='inventory-header'>
+            <h2>Current Inventory</h2>
+            <div className='inventory-search'>
+                <input 
+                    type='text'
+                    placeholder='Search products...'
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                />
+            </div>
+        </div>
+
+        <div className='inventory-controls'>
+            <div className='category-filter'>
                 <select onChange={handleCategoryChange} value={selectedCategory}>
                     <option value=''>All Categories</option>
                     {
@@ -118,45 +153,80 @@ function AdminRefillProductPage() {
                         ))
                     }
                 </select>
-               
-                <button onClick={handleAddProductClick}>Add Product</button>
             </div>
+            <button className='add-product-btn' onClick={handleAddProductClick}>Add Product</button>
         </div>
 
-        {error && <p>{error}</p>}
-        <br />
-        <br />
-        <br />
-        <table className='product-table'>
+        {error && <p className='error-message'>{error}</p>}
+        
+        <table className='inventory-table'>
             <thead>
                 <tr>
-                    <th>Product Name</th>
-                    <th>Liquid Level</th>
-                    <th>Volume (L)</th>
+                    <th>Product</th>
+                    <th>Level</th>
+                    <th>Capacity</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {
                     filteredRefillProducts.map((product) => {
-                        const waterLevel = (product.quantity / product.quantity) * 100;
+                        //actual values from the database
+                        const capacity = product.productSize || `${product.quantity}${product.sizeUnit || 'L'}`;
+                        //calculate percentage based on actual product data
+                        //for demo purposes, let's assume the tank capacity is 100L and calculate accordingly
+                        const tankCapacity = parseInt(product.productSize) || 100;
+                        const currentQuantity = product.quantity || 0;
+                        const percentage = Math.round((currentQuantity / tankCapacity) * 100);
+                        const status = getStatusLabel(percentage);
+                        const productColor = getProductColor(product);
+                        const levelColor = productColor;
                         
                         return (
                             <tr key={product._id}>
-                                <td>{product.productName}</td>
-                                <td>
-                                    <div className='cylinder'>
-                                        <div
-                                            className='water'
-                                            style={{ height: `${waterLevel}%`, background: product.color }}
-                                        ></div>
+                                <td className='product-cell'>
+                                    <div className='product-info'>
+                                        <div className='product-icon' style={{ backgroundColor: '#f5f5f5' }}>
+                                            <div className='bottle-icon' style={{ backgroundColor: productColor }}></div>
+                                        </div>
+                                        <div className='product-details'>
+                                            <div className='product-name'>{product.productName}</div>
+                                            <div className='product-category'>{product.category}</div>
+                                        </div>
                                     </div>
                                 </td>
-                                <td>{product.quantity}L</td>
-                                <td>
-                                    <button onClick={() => handleEditProductClick(product._id)}>Edit</button>
+                                <td className='level-cell'>
+                                    <div className='level-indicator'>
+                                        <div 
+                                            className='level-fill' 
+                                            style={{ 
+                                                height: `${percentage}%`, 
+                                                backgroundColor: productColor 
+                                            }}
+                                        ></div>
+                                        <span className='level-percentage'>{percentage}%</span>
+                                    </div>
+                                </td>
+                                <td className='capacity-cell'>
+                                    <div>
+                                        <span className='capacity-value'>{capacity}</span>
+                                        <span className='capacity-label'>Total</span>
+                                    </div>
+                                </td>
+                                <td className='status-cell'>
+                                    <span className={`status-badge ${status.className}`}>
+                                        {status.text}
+                                    </span>
+                                </td>
+                                <td className='actions-cell'>
+                                    <button className='edit-btn' onClick={() => handleEditProductClick(product._id)}>
+                                        Edit
+                                    </button>
                                     {' '}
-                                    <button onClick={() => handleDeleteProductClick(product._id)}>Delete</button>
+                                    <button className='delete-btn' onClick={() => handleDeleteProductClick(product._id)}>
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         );
@@ -164,7 +234,6 @@ function AdminRefillProductPage() {
                 }
             </tbody>
         </table>
-
     </div>
   )
 }

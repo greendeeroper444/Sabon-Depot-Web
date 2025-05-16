@@ -46,6 +46,8 @@
     "react-router-dom": "^6.24.1",
     "react-slick": "^0.30.2",
     "react-toastify": "^10.0.5",
+    "react-virtualized-auto-sizer": "^1.0.26",
+    "react-window": "^1.8.11",
     "select-philippines-address": "^1.0.6",
     "slick-carousel": "^1.8.1"
   },

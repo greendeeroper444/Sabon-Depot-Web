@@ -42,33 +42,27 @@ function AdminModalRefillingContentDetailsComponent({isOpen, onClose, cartItems,
     };
     
     const handlePriceChange = (cartItemId, newPrice) => {
-        if(newPrice === '' || newPrice < 1){
-            const updatedCartItems = cartItems.map(item =>
-                item._id === cartItemId ? {...item, price: newPrice} : item
-            );
-            setCartItems(updatedCartItems);
-            return;
-        }
-    
-        try {
-            axios.put('/adminCartRefill/updateProductPriceRefillAdmin', {
-                cartItemId,
-                price: parseFloat(newPrice) || 0
-            }).then(response => {
-                if(response.data.success){
-                    const updatedCartItems = cartItems.map(item =>
-                        item._id === cartItemId
-                            ? {...item, price: parseFloat(newPrice) || 0}
-                            : item
-                    );
-                    setCartItems(updatedCartItems);
-                } else {
-                    toast.error(response.data.message || 'Failed to update price.');
-                }
-            });
-        } catch (error) {
-            console.error('Error updating price:', error);
-            toast.error('Failed to update price. Please try again.');
+        //allow empty string and decimal inputs
+        const updatedCartItems = cartItems.map(item =>
+            item._id === cartItemId ? {...item, price: newPrice} : item
+        );
+        setCartItems(updatedCartItems);
+        
+        //only send to server if it's a valid number greater than 0
+        if(newPrice !== '' && parseFloat(newPrice) > 0){
+            try {
+                axios.put('/adminCartRefill/updateProductPriceRefillAdmin', {
+                    cartItemId,
+                    price: parseFloat(newPrice)
+                }).then(response => {
+                    if(!response.data.success) {
+                        toast.error(response.data.message || 'Failed to update price.');
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating price:', error);
+                toast.error('Failed to update price. Please try again.');
+            }
         }
     };
     
@@ -241,10 +235,13 @@ function AdminModalRefillingContentDetailsComponent({isOpen, onClose, cartItems,
                                                 <span>X</span>
                                                 <span>₱</span>
                                                 <input
-                                                    type='text'
-                                                    value={cartItem.price || ''} 
+                                                    type='number'
+                                                    step="0.01"
+                                                    min="0.01"
+                                                    value={cartItem.price || ''}
                                                     onChange={(e) => handlePriceChange(cartItem._id, e.target.value)}
                                                     className='quantity-input'
+                                                    style={{ width: '80px' }}
                                                 />
 
                                             </div>

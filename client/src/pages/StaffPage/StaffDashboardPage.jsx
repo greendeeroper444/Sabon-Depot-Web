@@ -309,19 +309,17 @@ function StaffDashboardPage() {
             </thead>
             <tbody>
                 {
-                    filteredProducts.length > 0 ? (
+                   filteredProducts.length > 0 ? (
                         filteredProducts.map((product) => (
-                            product.productId ? (
-                                <tr key={product.productId._id}>
-                                    <td>{product.productName}</td>
-                                    <td>{product.productId.productCode}</td>
-                                    <td>{product.productSize}</td>
-                                    <td>{product.productId.category}</td>
-                                    <td>{product.productId.quantity}</td>
-                                    <td>{product.quantitySold}</td>
-                                    <td>{product.totalSales}</td>
-                                </tr>
-                            ) : null 
+                            <tr key={product.productId?._id || product._id}>
+                                <td>{product.productName}</td>
+                                <td>{product.productId ? product.productId.productCode : "N/A"}</td>
+                                <td>{product.productSize}</td>
+                                <td>{product.productId ? product.productId.category : "N/A"}</td>
+                                <td>{product.productId ? product.productId.quantity : "N/A"}</td>
+                                <td>{product.quantitySold}</td>
+                                <td>{product.totalSales}</td>
+                            </tr>
                         ))
                     ) : (
                         <p style={{ textAlign: 'center' }}>No results found</p>

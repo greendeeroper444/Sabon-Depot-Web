@@ -4,6 +4,23 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { ChromePicker } from 'react-color';
 
+//colors for easy selection
+const namedColors = [
+    { name: 'Red', hex: '#FF0000' },
+    { name: 'Blue', hex: '#0000FF' },
+    { name: 'Green', hex: '#008000' },
+    { name: 'Yellow', hex: '#FFFF00' },
+    { name: 'Orange', hex: '#FFA500' },
+    { name: 'Purple', hex: '#800080' },
+    { name: 'Pink', hex: '#FFC0CB' },
+    { name: 'Brown', hex: '#A52A2A' },
+    { name: 'Black', hex: '#000000' },
+    { name: 'White', hex: '#FFFFFF' },
+    { name: 'Gray', hex: '#808080' },
+    { name: 'Cyan', hex: '#00FFFF' },
+    { name: 'Magenta', hex: '#FF00FF' }
+];
+
 function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProducts}) {
     const [categories, setCategories] = useState([]);
     const [dataInput, setDataInput] = useState({
@@ -13,15 +30,38 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
         quantity: '', 
         price: '', 
         color: '#ff0000'
-    })
+    });
     const [showPicker, setShowPicker] = useState(false);
+    const [colorName, setColorName] = useState('Red');
 
     const handleChangeComplete = (color) => {
         setDataInput((prevState) => ({
             ...prevState,
             color: color.hex, 
         }));
-        setShowPicker(!showPicker);
+        
+        //find the closest named color
+        const closestColor = findClosestNamedColor(color.hex);
+        setColorName(closestColor.name);
+    };
+    
+    //select a named color directly
+    const selectNamedColor = (color) => {
+        setDataInput((prevState) => ({
+            ...prevState,
+            color: color.hex, 
+        }));
+        setColorName(color.name);
+        setShowPicker(false);
+    };
+    
+    //closest named color to a hex value
+    const findClosestNamedColor = (hex) => {
+        //simple implementation - find exact match or default to first color
+        const exactMatch = namedColors.find(color => color.hex.toLowerCase() === hex.toLowerCase());
+        if (exactMatch) return exactMatch;
+
+        return { name: 'Custom', hex: hex };
     };
 
     useEffect(() => {
@@ -41,6 +81,10 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
         };
     
         fetchCategories();
+        
+        // Set initial color name
+        const initialColor = findClosestNamedColor(dataInput.color);
+        setColorName(initialColor.name);
     }, []);
     
 
@@ -63,11 +107,6 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
             toast.error('Please input all fields');
             return;
         }
-    
-        // if(quantity > 105){
-        //     toast.error('quantity cannot exceed 105');
-        //     return;
-        // }
 
         const productData = {productCode, productName, category, quantity, price, color};
     
@@ -89,6 +128,7 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
                     price: '', 
                     color: '#ff0000'
                 });
+                setColorName('Red');
                 toast.success(response.data.message);
                 onClose();
                 fetchRefillProducts();
@@ -172,7 +212,7 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
                         </div>
                         <div style={{ position: 'relative' }}>
                             <label style={{ fontWeight: 'bold', fontSize: '10px' }}>COLOR:</label>
-                            <div style={{ position: 'relative' }}>
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                                 <div 
                                 onClick={() => setShowPicker(!showPicker)}
                                 style={{
@@ -185,14 +225,64 @@ function AdminModalRefillProductsAddComponent({isOpen, onClose, fetchRefillProdu
                                 marginLeft: '10px',
                                 }}
                                 ></div>
+                                <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>
+                                    {colorName} ({dataInput.color})
+                                </span>
 
                                 {
                                     showPicker && (
-                                        <div style={{ position: 'absolute', zIndex: 2 }}>
+                                        <div style={{ 
+                                            position: 'absolute', 
+                                            zIndex: 2, 
+                                            top: '60px', 
+                                            left: '0', 
+                                            backgroundColor: '#fff',
+                                            boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+                                            padding: '10px',
+                                            borderRadius: '5px'
+                                        }}>
+                                            <div style={{ marginBottom: '10px' }}>
+                                                <h4 style={{ margin: '0 0 10px 0' }}>Common Colors</h4>
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '10px' }}>
+                                                    {
+                                                        namedColors.map((color, index) => (
+                                                            <div 
+                                                                key={index}
+                                                                onClick={() => selectNamedColor(color)}
+                                                                style={{
+                                                                    width: '30px',
+                                                                    height: '30px',
+                                                                    backgroundColor: color.hex,
+                                                                    border: '1px solid #ccc',
+                                                                    cursor: 'pointer',
+                                                                    position: 'relative',
+                                                                    borderRadius: '3px'
+                                                                }}
+                                                                title={`${color.name} (${color.hex})`}
+                                                            />
+                                                        ))
+                                                    }
+                                                </div>
+                                            </div>
+                                            
+                                            <h4 style={{ margin: '10px 0' }}>Custom Color</h4>
                                             <ChromePicker
-                                            color={dataInput.color}
-                                            onChangeComplete={handleChangeComplete}
+                                                color={dataInput.color}
+                                                onChangeComplete={handleChangeComplete}
                                             />
+                                            <button 
+                                                onClick={() => setShowPicker(false)}
+                                                style={{
+                                                    marginTop: '10px',
+                                                    padding: '5px 10px',
+                                                    backgroundColor: '#f0f0f0',
+                                                    border: '1px solid #ccc',
+                                                    borderRadius: '3px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Close
+                                            </button>
                                         </div>
                                     )
                                 }
