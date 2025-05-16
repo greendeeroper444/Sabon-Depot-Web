@@ -11,7 +11,7 @@ import { isAdminRoute, isAdminStaffRoute, isCustomerRoute, isStaffRoute } from '
 
 axios.defaults.baseURL =
   process.env.NODE_ENV === 'production'
-    ? 'https://sabon-depot-system.onrender.com'
+    ? 'https://sabon-depot-web.onrender.com'
     : 'http://localhost:8000';
 // axios.defaults.baseURL = 'http://localhost:8000';
 axios.defaults.withCredentials = true;
