@@ -161,7 +161,7 @@ function SalesReportPage() {
         doc.text('Tel: (084) 309-2454 / 0909-8970769', 50, 26);
         doc.text('FB Page: Sabon Depot-Mindanao', 50, 30);
         doc.setFontSize(12).setFont(undefined, 'bold');
-        doc.text('FINISHED GOODS PRODUCTION REPORT', 14, 47);
+        doc.text('SALES MONITORING REPORT', 14, 47);
     
         let startY = 60;
     
@@ -232,7 +232,7 @@ function SalesReportPage() {
         });
     
         //save PDF
-        doc.save('Inventory_Report.pdf');
+        doc.save('Sales_Report.pdf');
     };
     
 

@@ -76,7 +76,7 @@ const OrderSchema = new mongoose.Schema({
     billingDetails: {
         firstName: {type: String, required: true},
         lastName: {type: String, required: true},
-        middleInitial: {type: String, required: true},
+        middleInitial: {type: String},
         contactNumber: {type: String, required: true},
         province: {type: String, required: true},
         city: {type: String, required: true},

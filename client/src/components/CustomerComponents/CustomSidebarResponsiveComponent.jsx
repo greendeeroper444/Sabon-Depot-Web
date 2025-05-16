@@ -6,6 +6,7 @@ import customerDefaultProfilePicture from '../../assets/icons/customer-default-p
 import { CustomerContext } from '../../../contexts/CustomerContexts/CustomerAuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import notificationIcon from '../../assets/admin/adminicons/admin-navbar-notification-icon-2.png';
 
 function CustomSidebarResponsiveComponent({customerCloseSidebar}) {
     const {customer, logout} = useContext(CustomerContext);
@@ -52,7 +53,9 @@ function CustomSidebarResponsiveComponent({customerCloseSidebar}) {
                         <NavLink to={`/cart/${customer?._id}`} onClick={handleLinkClick}>
                             <img src={iconCart} className='icon-cart' alt="Cart" />
                         </NavLink>
-
+                        <NavLink to={`/cart/${customer?._id}`} onClick={handleLinkClick}>
+                            <img src={notificationIcon} className='icon-cart' alt="Cart" />
+                        </NavLink>
                         <li className='customer-sidebar-dropdown-container'>
                             <div className='customer-sidebar-dropdown-trigger' onClick={toggleDropdown}>
                                 <img

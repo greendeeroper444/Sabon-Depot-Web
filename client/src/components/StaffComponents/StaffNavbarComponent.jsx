@@ -392,7 +392,7 @@ function StaffNavbarComponent({adminToggleSidebar}) {
                         !!staff && (
                             <>
                                 <span className='profile-name'>{staff.fullName}</span>
-                                <span className='profile-role'>Admin</span>
+                                <span className='profile-role'>Staff</span>
                             </>
                         )
                     }

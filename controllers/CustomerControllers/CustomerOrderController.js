@@ -76,7 +76,6 @@ const createOrderCustomer = async(req, res) => {
         if(
             !parsedBillingDetails.firstName ||
             !parsedBillingDetails.lastName ||
-            !parsedBillingDetails.middleInitial ||
             !parsedBillingDetails.contactNumber ||
             !parsedBillingDetails.province ||
             !parsedBillingDetails.city ||
