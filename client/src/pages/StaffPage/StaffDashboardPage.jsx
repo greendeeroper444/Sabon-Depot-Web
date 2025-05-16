@@ -197,7 +197,7 @@ function StaffDashboardPage() {
                                 ${notification.quantity === 0 ? 'out-of-stock-tr' : ''}`}
                                 onClick={() =>
                                     window.location.href =
-                                    'https://sabon-depot-system-1.onrender.com/staff/inventory/finished-product'
+                                    'https://sabon-depot-system.onrender.com/staff/inventory/finished-product'
                                 }
                                 >
                                     <td>{notification.productCode}</td>

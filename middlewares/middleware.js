@@ -20,7 +20,7 @@ middleware.use(cookieParser());
 
 middleware.use(cors({
     credentials: true,
-    origin: ['http://localhost:5173', 'https://sabon-depot-system-1.onrender.com'],
+    origin: ['http://localhost:5173', 'https://sabon-depot-system.onrender.com'],
     // origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE']
 }))
