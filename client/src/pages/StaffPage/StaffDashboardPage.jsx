@@ -113,19 +113,6 @@ function StaffDashboardPage() {
         fetchSalesOverview();
     }, []);
 
-    // const chartOptions = {
-    //     responsive: true,
-    //     plugins: {
-    //         legend: {
-    //             display: false,
-    //         },
-    //     },
-    //     scales: {
-    //         y: {
-    //             beginAtZero: true,
-    //         },
-    //     },
-    // };\
     const chartOptions = {
         responsive: true,
         plugins: {

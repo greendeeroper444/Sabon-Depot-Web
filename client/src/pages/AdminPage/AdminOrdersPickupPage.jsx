@@ -34,20 +34,25 @@ function AdminOrdersPickupPage() {
         navigate(`/admin/orders-pickup/details/${orderId}`);
     };
 
-    useEffect(() => {
+     useEffect(() => {
         const fetchOrders = async() => {
             try {
-                const response = await axios.get('/staffOrders/getAllOrdersStaff');
-                const sortedOrders = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                const response = await axios.get('/adminOrders/getAllOrdersAdmin');
+                
+                //filter orders by payment method "Pick Up" only
+                const pickupOrders = response.data.filter(order => 
+                    order.paymentMethod === 'Pick Up'
+                );
+                
+                const sortedOrders = pickupOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 setOrders(sortedOrders);
             } catch (error) {
-                console.error(error);
+                console.error('Error fetching pickup orders:', error);
             }
         };
 
         fetchOrders();
     }, []);
-
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);

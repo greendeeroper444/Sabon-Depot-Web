@@ -34,10 +34,16 @@ function AdminOrdersPage() {
         const fetchOrders = async() => {
             try {
                 const response = await axios.get('/adminOrders/getAllOrdersAdmin');
-                const sortedOrders = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                
+                //filter orders by payment method "Pick Up" only
+                const pickupOrders = response.data.filter(order => 
+                    order.paymentMethod === 'Cash On Delivery'
+                );
+                
+                const sortedOrders = pickupOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 setOrders(sortedOrders);
             } catch (error) {
-                console.error(error);
+                console.error('Error fetching pickup orders:', error);
             }
         };
 

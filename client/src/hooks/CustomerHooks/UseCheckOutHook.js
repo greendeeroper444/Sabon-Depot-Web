@@ -100,15 +100,24 @@ export default function UseCheckOutHook(customerId, selectedItems = [], navigate
     const handlePlaceOrder = async() => {
     
         //validate billing details
-        const missingFields = [];
-        for(const [key, value] of Object.entries(billingDetails)){
-            if(!value){
-                missingFields.push(key);
-            }
+        // const missingFields = [];
+        // for(const [key, value] of Object.entries(billingDetails)){
+        //     if(!value){
+        //         missingFields.push(key);
+        //     }
+        // }
+    
+        // if(missingFields.length > 0) {
+        //     toast.error('Please fill out all billing details.');
+        //     return;
+        // }
+        if(!billingDetails.firstName || !billingDetails.lastName || !paymentMethod){
+            toast.error('Please complete all required fields.');
+            return;
         }
     
-        if(missingFields.length > 0) {
-            toast.error('Please fill out all billing details.');
+        if(selectedItems.length === 0 || !selectedItems[0]?.productId?._id){
+            toast.error('No valid product selected.');
             return;
         }
     
