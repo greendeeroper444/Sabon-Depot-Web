@@ -84,6 +84,16 @@ function AdminModalRefillingContentDetailsComponent({isOpen, onClose, cartItems,
             toast.error('Cart is empty!');
             return;
         }
+
+        //validate if cash received is sufficient
+        const {finalSubtotal} = calculateSubtotalModalStaff(cartItems);
+        const numericSubtotal = parseFloat(finalSubtotal.replace(/₱|,/g, '')) || 0;
+        const numericCashReceived = parseFloat(cashReceived) || 0;
+
+        if(numericCashReceived < numericSubtotal){
+            toast.error('Cash amount is insufficient!');
+            return;
+        }
     
         try {
             //pass the manual discount to the calculation function

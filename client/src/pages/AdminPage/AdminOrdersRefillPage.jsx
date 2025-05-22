@@ -102,121 +102,139 @@ function AdminOrdersRefillPage() {
         setCurrentPage(1);
     };
 
-  return (
-    <div className='staff-orders-walkin-container'>
-        <StaffModalOrdersWalkinEditComponent
-            isOpen={isEditModalOpen}
-            onClose={handleCloseEditModal}
-            selectedOrder={selectedOrder}
-            fetchOrderWalkins={fetchOrderWalkins}
-        />
+    // Function to aggregate order data
+    const getOrderTotals = (order) => {
+        const totalQuantity = order.items.length; // Count of items in the order
+        const totalPrice = order.items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
+        const itemNames = order.items.map(item => item.productName).join(', ');
+        const sizes = [...new Set(order.items.map(item => item.productSize))].join(', ');
+        
+        return {
+            totalQuantity,
+            totalPrice,
+            itemNames,
+            sizes
+        };
+    };
 
-        <div className='staff-orders-walkin-header'>
-            <ul className='staff-orders-walkin-nav'>
-                {/* <li className='active'>All Orders</li> */}
-                {/* <li>On Delivery</li>
-                <li>Delivered</li>
-                <li>Canceled</li> */}
-            </ul>
-        </div>
-        <div className='staff-orders-walkin-search'>
-            <form action=''>
-                <button type='submit' className='search-button'>
-                    <img src={searchIcon} alt='Search Icon' />
-                </button>
-                <input 
-                    type='text' 
-                    placeholder='Search by ID, product, or others...' 
-                    className='search-input'
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                />
-            </form>
-            <div className='date-picker-container'>
-                <img src={calendarIcon} alt='Calendar Icon' />
-                <DatePicker
-                    value={selectedDates}
-                    onChange={handleDateChange}
-                    placeholder='Select dates'
-                    multiple
-                    format='MMM DD'
-                    className='date-picker-input'
-                    maxDate={new Date()}
-                />
+    return (
+        <div className='staff-orders-walkin-container'>
+            <StaffModalOrdersWalkinEditComponent
+                isOpen={isEditModalOpen}
+                onClose={handleCloseEditModal}
+                selectedOrder={selectedOrder}
+                fetchOrderWalkins={fetchOrderWalkins}
+            />
+
+            <div className='staff-orders-walkin-header'>
+                <ul className='staff-orders-walkin-nav'>
+                    {/* <li className='active'>All Orders</li> */}
+                    {/* <li>On Delivery</li>
+                    <li>Delivered</li>
+                    <li>Canceled</li> */}
+                </ul>
             </div>
-        </div>
-        <table className='staff-orders-walkin-table'>
-            <thead>
-                <tr>
-                    {/* <th><input type='checkbox' onClick={handleCheckboxClick} /></th> */}
-                    <th>Orders Id</th>
-                    <th>Item</th>
-                    <th>Volume</th>
-                    <th>Size</th>
-                    <th>Price</th>
-                    <th>Subtotal</th>
-                    <th>Date</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {
-                    currentOrders.length > 0 ? currentOrders.map(order => (
-                        order.items.map(item => (
-                            <tr key={item.productId} className='clickable-row'
-                                onClick={() => navigate(`/admin/order-summary-refill/${order._id}`)}>
-                                {/* <td><input type='checkbox' onClick={handleCheckboxClick} /></td> */}
-                                <td>{order.orderNumber}</td>
-                                <td>{item.productName || "N/A"}</td>
-                                <td>{item.quantity || 0}</td>
-                                <td>{item.productSize}</td>
-                                <td>{`₱${(item.price ?? 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
-                                <td>{`₱${((item.price ?? 0) * (item.quantity ?? 0)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
-                                <td>{orderDate(order.createdAt)}</td>
-                            </tr>
+            <div className='staff-orders-walkin-search'>
+                <form action=''>
+                    <button type='submit' className='search-button'>
+                        <img src={searchIcon} alt='Search Icon' />
+                    </button>
+                    <input 
+                        type='text' 
+                        placeholder='Search by ID, product, or others...' 
+                        className='search-input'
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                    />
+                </form>
+                <div className='date-picker-container'>
+                    <img src={calendarIcon} alt='Calendar Icon' />
+                    <DatePicker
+                        value={selectedDates}
+                        onChange={handleDateChange}
+                        placeholder='Select dates'
+                        multiple
+                        format='MMM DD'
+                        className='date-picker-input'
+                        maxDate={new Date()}
+                    />
+                </div>
+            </div>
+            <table className='staff-orders-walkin-table'>
+                <thead>
+                    <tr>
+                        <th>Orders Id</th>
+                        <th>Items</th>
+                        <th>Quantity</th>
+                        <th>Sizes</th>
+                        <th>Average Price</th>
+                        <th>Total Amount</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        currentOrders.length > 0 ? currentOrders.map(order => {
+                            const orderTotals = getOrderTotals(order);
+                            const averagePrice = order.items.length > 0 ? 
+                                order.items.reduce((sum, item) => sum + (item.price || 0), 0) / order.items.length : 0;
+                            
+                            return (
+                                <tr key={order._id} className='clickable-row'
+                                    onClick={() => navigate(`/admin/order-summary-refill/${order._id}`)}>
+                                    <td>{order.orderNumber}</td>
+                                    <td title={orderTotals.itemNames}>{orderTotals.itemNames}</td>
+                                    <td>{orderTotals.totalQuantity}</td>
+                                    <td>{orderTotals.sizes}</td>
+                                    <td>{`₱${averagePrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
+                                    <td>{`₱${orderTotals.totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
+                                    <td>{orderDate(order.createdAt)}</td>
+                                    <td></td>
+                                </tr>
+                            );
+                        }) : <tr><td colSpan="8">No results found</td></tr>
+                    }
+                </tbody>
+            </table>
+            <div className='staff-orders-walkin-footer'>
+                <div className='show-result'>
+                    <span>Show result: </span>
+                    <select value={ordersPerPage} onChange={handleOrdersPerPageChange}>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
+                <div className='pagination'>
+                    <span 
+                    onClick={() => handlePageChange(currentPage - 1)} 
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+                    >
+                        <FontAwesomeIcon icon={faAngleLeft} />
+                    </span>
+                    {
+                        Array.from({ length: totalPages }, (_, index) => (
+                            <span 
+                            key={index} 
+                            onClick={() => handlePageChange(index + 1)} 
+                            className={currentPage === index + 1 ? 'active' : ''}
+                            style={{ cursor: 'pointer' }}
+                            >
+                                {index + 1}
+                            </span>
                         ))
-                    )) : <tr><td colSpan="8">No results found</td></tr>
-                }
-            </tbody>
-        </table>
-        <div className='staff-orders-walkin-footer'>
-            <div className='show-result'>
-                <span>Show result: </span>
-                <select value={ordersPerPage} onChange={handleOrdersPerPageChange}>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                </select>
-            </div>
-            <div className='pagination'>
-                <span 
-                onClick={() => handlePageChange(currentPage - 1)} 
-                style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
-                >
-                    <FontAwesomeIcon icon={faAngleLeft} />
-                </span>
-                {
-                    Array.from({ length: totalPages }, (_, index) => (
-                        <span 
-                        key={index} 
-                        onClick={() => handlePageChange(index + 1)} 
-                        className={currentPage === index + 1 ? 'active' : ''}
-                        style={{ cursor: 'pointer' }}
-                        >
-                            {index + 1}
-                        </span>
-                    ))
-                }
-                <span 
-                onClick={() => handlePageChange(currentPage + 1)} 
-                style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
-                >
-                    <FontAwesomeIcon icon={faAngleRight} />
-                </span>
+                    }
+                    <span 
+                    onClick={() => handlePageChange(currentPage + 1)} 
+                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
+                    >
+                        <FontAwesomeIcon icon={faAngleRight} />
+                    </span>
+                </div>
             </div>
         </div>
-    </div>
-  )
+    )
 }
 
 export default AdminOrdersRefillPage

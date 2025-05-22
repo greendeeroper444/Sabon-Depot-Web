@@ -46,6 +46,16 @@ function AdminModalWalkinContentDetailsComponent({isOpen, onClose, cartItems, se
             return;
         }
 
+        //validate if cash received is sufficient
+        const {finalSubtotal} = calculateSubtotalModalAdmin(cartItems);
+        const numericSubtotal = parseFloat(finalSubtotal.replace(/₱|,/g, '')) || 0;
+        const numericCashReceived = parseFloat(cashReceived) || 0;
+
+        if(numericCashReceived < numericSubtotal){
+            toast.error('Cash amount is insufficient!');
+            return;
+        }
+
         try {
             const {finalSubtotal} = calculateSubtotalModalAdmin(cartItems);
 
