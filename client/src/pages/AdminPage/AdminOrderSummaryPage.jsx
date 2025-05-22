@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom'
 import '../../CSS/StaffCSS/StaffOrderSummary.css';
 import toast from 'react-hot-toast'
 import PropTypes from 'prop-types';
-import { orderDate } from '../../utils/OrderUtils';
+import { orderDate, orderDate2 } from '../../utils/OrderUtils';
 import StaffInvoiceModal from '../../components/StaffComponents/StaffInvoiceModal';
 import invoiceIcon from '../../assets/placeorder/placeorder-invoice-icon.png';
 
@@ -60,7 +60,7 @@ function AdminOrderSummaryPage() {
             orders.map((order) => (
                 <div key={order._id} className='order-summary'>
                     <div className='order-buttons'>
-                        <h2>Order ID: {order.orderNumber}</h2>
+                        <h2>Order ID: {order.orderNumber} / {orderDate2(order.createdAt)}</h2>
                         <button className='invoice-button' onClick={() => handleInvoiceClick(order)}>
                             <img src={invoiceIcon} alt='' />
                             <span>Invoice</span>

@@ -19,24 +19,13 @@ function AdminOrdersWalkinPage() {
     const [selectedDates, setSelectedDates] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [ordersPerPage, setOrdersPerPage] = useState(10);
-    const navigate = useNavigate();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const navigate = useNavigate()
     const {admin} = useContext(AdminContext);
-
-    console.log('Admin data',admin)
-
-    const handleEditOrderWalkinClick = async(orderId) => {
-        try {
-            const response = await axios.get(`/staffOrderWalkin/getUpdateOrderWalkinStaff/${orderId}`);
-            setSelectedOrder(response.data);
-            setIsEditModalOpen(true);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
+    
+   
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false);
         setSelectedOrder(null);
@@ -56,10 +45,6 @@ function AdminOrdersWalkinPage() {
     useEffect(() => {
         fetchOrderWalkins();
     }, []);
-
-    const handleNavigateWalkin = () => {
-        navigate('/staff/payment');
-    };
 
     const handleDateChange = (dates) => {
         setSelectedDates(dates);
@@ -96,6 +81,23 @@ function AdminOrdersWalkinPage() {
         setOrdersPerPage(Number(e.target.value));
         setCurrentPage(1);
     };
+
+    //define aggregateOrders function first
+    const aggregateOrders = (orders) => {
+        return orders.map(order => {
+            const aggregatedItems = order.items.map(item => item.productName).join(', ');
+            const totalQuantity = order.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            const totalPrice = order.items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
+            return {
+                ...order,
+                aggregatedItems,
+                totalQuantity,
+                totalPrice,
+            };
+        });
+    };
+
+    const aggregatedOrders = aggregateOrders(currentOrders);
 
   return (
     <div className='staff-orders-walkin-container'>
@@ -143,36 +145,28 @@ function AdminOrdersWalkinPage() {
         <table className='staff-orders-walkin-table'>
             <thead>
                 <tr>
-                    {/* <th><input type='checkbox' onClick={handleCheckboxClick} /></th> */}
                     <th>Orders Id</th>
-                    <th>Item</th>
-                    <th>Qty</th>
-                    <th>Size</th>
-                    <th>Price</th>
-                    <th>Subtotal</th>
+                    <th>Items</th>
+                    <th>Total Qty</th>
+                    <th>Total Price</th>
                     <th>Date</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
-                {
-                    currentOrders.length > 0 ? currentOrders.map(order => (
-                        order.items.map(item => (
-                            <tr key={item.productId} className='clickable-row'
-                            onClick={() => navigate(`/admin/order-summary/${order._id}`)}
-                            >
-                                {/* <td><input type='checkbox' onClick={handleCheckboxClick} /></td> */}
-                                <td>{order.orderNumber}</td>
-                                <td>{item.productName || "N/A"}</td>
-                                <td>{item.productSize}</td>
-                                <td>{item.quantity || 0}</td>
-                                <td>{`₱${(item.price ?? 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
-                                <td>{`₱${((item.price ?? 0) * (item.quantity ?? 0)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
-                                <td>{orderDate(order.createdAt)}</td>
-                            </tr>
-                        ))
-                    )) : <tr><td colSpan="8">No results found</td></tr>
-                }
+             {
+                aggregatedOrders.length > 0 ? aggregatedOrders.map(order => (
+                    <tr key={order._id} className='clickable-row'
+                        onClick={() => navigate(`/admin/order-summary/${order._id}`)}>
+                        <td>{order.orderNumber}</td>
+                        <td>{order.aggregatedItems}</td>
+                        <td>{order.totalQuantity}</td>
+                        <td>{`₱${order.totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}</td>
+                        <td>{orderDate(order.createdAt)}</td>
+                        <td></td>
+                    </tr>
+                )) : <tr><td colSpan="6">No results found</td></tr>
+            }
             </tbody>
         </table>
         <div className='staff-orders-walkin-footer'>
