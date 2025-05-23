@@ -101,15 +101,15 @@ const getTotalProductSales = async(req,res) => {
 const getDeliveredPendingCanceled = async(req, res) => {
     try {
         //count delivered orders where isDelivered is true
-        const deliveredCount = await OrderModel.countDocuments({isDelivered: true});
+        const deliveredCount = await OrderModel.countDocuments({orderStatus: 'Delivered'});
 
         //count pending orders where isDelivered, isApproved, isShipped, and isOutForDelivery are all false
         const pendingCount = await OrderModel.countDocuments({ 
-            isPending: true
+            orderStatus: 'Pending'
         });
 
         //count canceled orders where isCanceled is true
-        const pickedupCount = await OrderModel.countDocuments({isPickedUp: true});
+        const pickedupCount = await OrderModel.countDocuments({orderStatus: 'Picked Up'});
 
         res.json({
             delivered: deliveredCount,
